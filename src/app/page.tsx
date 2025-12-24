@@ -18,10 +18,14 @@ export default async function HomePage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <a href="#" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[var(--accent-red)] to-[var(--accent-red-light)] flex items-center justify-center shadow-glow-red">
-                <span className="text-white font-bold text-xl font-sans">S</span>
-              </div>
-              <span className="text-lg font-bold text-[var(--text-primary)] tracking-tight hidden sm:block font-sans">SAMPSON&apos;S</span>
+              <Image 
+                src="/logo.png" 
+                alt="Sampson's Barbershop Logo" 
+                width={40} 
+                height={40} 
+                className="rounded-lg shadow-glow-red"
+              />
+              <span className="text-lg font-bold text-[var(--text-primary)] tracking-tight hidden sm:block font-sans">Sampson&apos;s Barbershop</span>
             </a>
 
             <div className="hidden md:flex items-center gap-8 text-sm font-sans">
@@ -423,13 +427,14 @@ export default async function HomePage() {
                 
                 <div className="aspect-video rounded-xl overflow-hidden mb-6 bg-[var(--barber-surface)] border border-[var(--barber-border)]">
                   <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3108.8!2d-82.84!3d38.73!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzjCsDQzJzQ4LjAiTiA4MsKwNTAnMjQuMCJX!5e0!3m2!1sen!2sus!4v1"
+                    src="https://maps.google.com/maps?q=Sampson's+Barber+Shop+8520+Ohio+River+Rd+Wheelersburg+OH+45694&t=&z=15&ie=UTF8&iwloc=&output=embed"
                     width="100%"
                     height="100%"
                     style={{ border: 0 }}
                     allowFullScreen
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
+                    title="Sampson's Barbershop Location"
                   ></iframe>
                 </div>
                 
@@ -582,12 +587,15 @@ export default async function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="md:col-span-2">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[var(--accent-red)] to-[var(--accent-red-light)] flex items-center justify-center">
-                  <span className="text-white font-bold text-xl font-sans">S</span>
-                </div>
+                <Image 
+                  src="/logo.png" 
+                  alt="Sampson's Barbershop Logo" 
+                  width={40} 
+                  height={40} 
+                  className="rounded-lg"
+                />
                 <div>
-                  <span className="text-lg font-bold text-[var(--text-primary)] tracking-tight block font-sans">SAMPSON&apos;S</span>
-                  <span className="text-xs text-[var(--text-muted)] uppercase tracking-wider font-sans">Barbershop</span>
+                  <span className="text-lg font-bold text-[var(--text-primary)] tracking-tight block font-sans">Sampson&apos;s Barbershop</span>
                 </div>
               </div>
               <p className="text-sm text-[var(--accent-red)] font-semibold mb-2 font-sans">Brian Sampson, Barber</p>
