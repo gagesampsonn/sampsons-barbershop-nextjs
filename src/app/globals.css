@@ -1,26 +1,191 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Classic Barbershop Dark Theme - No Purple */
+  --barber-bg: #0D0D0D;
+  --barber-surface: #1A1A1A;
+  --barber-elevated: #242424;
+  --barber-border: #2E2E2E;
+  --barber-border-light: #404040;
+  
+  /* Classic Barbershop Red */
+  --accent-red: #C41E3A;
+  --accent-red-light: #E8294A;
+  
+  /* Classic Barbershop Blue */
+  --accent-blue: #1E56A0;
+  --accent-blue-light: #2E7AD1;
+  
+  /* Clean text colors */
+  --text-primary: #FFFFFF;
+  --text-secondary: #C0C0C0;
+  --text-muted: #808080;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--barber-bg);
+  color: var(--text-primary);
+  font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.glass-panel {
+  background: linear-gradient(135deg, rgba(26, 26, 26, 0.95), rgba(36, 36, 36, 0.9));
+  border: 1px solid var(--barber-border);
+  backdrop-filter: blur(10px);
+}
+
+.shadow-glow-red {
+  box-shadow: 0 0 20px rgba(196, 30, 58, 0.3);
+}
+
+.shadow-glow-blue {
+  box-shadow: 0 0 20px rgba(30, 86, 160, 0.3);
+}
+
+.text-gradient-red {
+  background: linear-gradient(135deg, var(--accent-red) 0%, var(--accent-red-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Barber pole stripe effect */
+.barber-stripe {
+  background: repeating-linear-gradient(
+    45deg,
+    #C41E3A,
+    #C41E3A 8px,
+    #FFFFFF 8px,
+    #FFFFFF 16px,
+    #1E56A0 16px,
+    #1E56A0 24px,
+    #FFFFFF 24px,
+    #FFFFFF 32px
+  );
+}
+
+/* Admin specific styles */
+.admin-card {
+  background: var(--barber-surface);
+  border: 1px solid var(--barber-border);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.admin-input {
+  background: var(--barber-bg);
+  border: 1px solid var(--barber-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text-primary);
+  width: 100%;
+  transition: border-color 0.2s;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.admin-input:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+}
+
+.admin-select {
+  background: var(--barber-bg);
+  border: 1px solid var(--barber-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.admin-select:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+}
+
+.admin-btn-primary {
+  background: var(--accent-red);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background-color 0.2s;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.admin-btn-primary:hover {
+  background: var(--accent-red-light);
+}
+
+.admin-btn-secondary {
+  background: var(--barber-elevated);
+  color: var(--text-primary);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  border: 1px solid var(--barber-border);
+  transition: all 0.2s;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.admin-btn-secondary:hover {
+  background: var(--barber-border);
+}
+
+.admin-btn-danger {
+  background: transparent;
+  color: var(--accent-red);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  border: 1px solid var(--accent-red);
+  transition: all 0.2s;
+}
+
+.admin-btn-danger:hover {
+  background: var(--accent-red);
+  color: white;
+}
+
+/* Toggle switch */
+.toggle-switch {
+  position: relative;
+  width: 48px;
+  height: 26px;
+  background: var(--barber-border);
+  border-radius: 13px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.toggle-switch.active {
+  background: var(--accent-blue);
+}
+
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.toggle-switch.active::after {
+  transform: translateX(22px);
+}
+
+/* Vintage frame effect */
+.vintage-frame {
+  border: 3px solid #8B7355;
+  box-shadow: 
+    inset 0 0 0 1px #D4C4A8,
+    0 4px 12px rgba(0,0,0,0.3);
 }
