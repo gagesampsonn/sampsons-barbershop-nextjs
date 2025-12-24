@@ -1,4 +1,4 @@
-import { Scissors, MapPin, Phone, Star, Clock, Navigation, User, UserCheck } from 'lucide-react'
+import { Scissors, MapPin, Phone, Star, Clock, Navigation, User, UserCheck, Users } from 'lucide-react'
 import Image from 'next/image'
 import { getWeeklyHours, getUpcomingExceptions, isCurrentlyOpen, formatHoursForDay } from '@/lib/hours'
 import { DAY_NAMES, formatTimeForDisplay } from '@/lib/types'
@@ -26,7 +26,7 @@ export default async function HomePage() {
 
             <div className="hidden md:flex items-center gap-8 text-sm font-sans">
               <a href="#services" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Services</a>
-              <a href="#gallery" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Styles</a>
+              <a href="#busy-times" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Busy Times</a>
               <a href="#hours" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Hours</a>
               <a href="#location" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Location</a>
             </div>
@@ -255,8 +255,128 @@ export default async function HomePage() {
           </div>
         </section>
 
+        {/* Busyness Chart Section */}
+        <section id="busy-times" className="py-20 bg-[var(--barber-bg)] border-t border-[var(--barber-border)]">
+          <div className="max-w-4xl mx-auto px-6 lg:px-8">
+            <div className="text-center mb-10">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded bg-[var(--barber-surface)] border border-[var(--barber-border)] text-[var(--text-secondary)] text-xs font-medium tracking-wide mb-4 font-sans">
+                <Users size={14} className="text-[var(--accent-blue)]" />
+                Best Times to Visit
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] tracking-tight mb-4 font-sans">
+                When It&apos;s <span className="text-[var(--accent-blue)]">Quiet</span>
+              </h2>
+              <p className="text-[var(--text-secondary)] max-w-xl mx-auto">
+                Plan your visit when it&apos;s less busy. Here&apos;s our typical weekly traffic pattern.
+              </p>
+            </div>
+
+            {/* Busyness Chart */}
+            <div className="glass-panel rounded-2xl p-6 md:p-8">
+              {/* Legend */}
+              <div className="flex items-center justify-center gap-6 mb-6 text-sm font-sans">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded bg-green-500/80"></div>
+                  <span className="text-[var(--text-muted)]">Quiet</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded bg-yellow-500/80"></div>
+                  <span className="text-[var(--text-muted)]">Moderate</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded bg-[var(--accent-red)]/80"></div>
+                  <span className="text-[var(--text-muted)]">Busy</span>
+                </div>
+              </div>
+
+              {/* Chart Grid */}
+              <div className="overflow-x-auto">
+                <div className="min-w-[500px]">
+                  {/* Time Headers */}
+                  <div className="grid grid-cols-[80px_repeat(5,1fr)] gap-1 mb-1">
+                    <div></div>
+                    <div className="text-center text-xs text-[var(--text-muted)] font-sans py-2">9-10 AM</div>
+                    <div className="text-center text-xs text-[var(--text-muted)] font-sans py-2">10-12 PM</div>
+                    <div className="text-center text-xs text-[var(--text-muted)] font-sans py-2">12-2 PM</div>
+                    <div className="text-center text-xs text-[var(--text-muted)] font-sans py-2">2-4 PM</div>
+                    <div className="text-center text-xs text-[var(--text-muted)] font-sans py-2">4-5 PM</div>
+                  </div>
+                  
+                  {/* Days */}
+                  {[
+                    { day: 'Monday', levels: [1, 2, 2, 1, 2] },
+                    { day: 'Tuesday', levels: [1, 1, 2, 1, 2] },
+                    { day: 'Wednesday', levels: [1, 2, 2, 2, 2] },
+                    { day: 'Thursday', levels: [1, 2, 2, 1, 2] },
+                    { day: 'Friday', levels: [2, 2, 3, 2, 3] },
+                    { day: 'Saturday', levels: [3, 3, 0, 0, 0] }, // 7 AM - 12 PM only
+                  ].map((row, idx) => (
+                    <div key={idx} className="grid grid-cols-[80px_repeat(5,1fr)] gap-1 mb-1">
+                      <div className="flex items-center text-sm font-medium text-[var(--text-primary)] font-sans pr-2">
+                        {row.day}
+                      </div>
+                      {row.levels.map((level, i) => (
+                        <div
+                          key={i}
+                          className={`h-10 rounded-md flex items-center justify-center transition-all ${
+                            level === 0 
+                              ? 'bg-[var(--barber-surface)] border border-[var(--barber-border)]' 
+                              : level === 1 
+                                ? 'bg-green-500/20 border border-green-500/30' 
+                                : level === 2 
+                                  ? 'bg-yellow-500/20 border border-yellow-500/30' 
+                                  : 'bg-[var(--accent-red)]/20 border border-[var(--accent-red)]/30'
+                          }`}
+                        >
+                          {level === 0 && (
+                            <span className="text-xs text-[var(--text-muted)]">Closed</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                  
+                  {/* Sunday */}
+                  <div className="grid grid-cols-[80px_repeat(5,1fr)] gap-1 mt-1">
+                    <div className="flex items-center text-sm font-medium text-[var(--text-muted)] font-sans pr-2">
+                      Sunday
+                    </div>
+                    <div className="col-span-5 h-10 rounded-md bg-[var(--barber-surface)] border border-[var(--barber-border)] flex items-center justify-center">
+                      <span className="text-xs text-[var(--text-muted)]">Closed</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tips */}
+              <div className="mt-8 pt-6 border-t border-[var(--barber-border)]">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-start gap-3 p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+                    <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                      <Clock size={16} className="text-green-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-[var(--text-primary)] font-sans">Best Time</p>
+                      <p className="text-xs text-[var(--text-muted)]">Weekday mornings (9-10 AM) are typically the quietest.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-4 rounded-xl bg-[var(--accent-red)]/10 border border-[var(--accent-red)]/20">
+                    <div className="w-8 h-8 rounded-full bg-[var(--accent-red)]/20 flex items-center justify-center flex-shrink-0">
+                      <Users size={16} className="text-[var(--accent-red)]" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-[var(--text-primary)] font-sans">Busiest Time</p>
+                      <p className="text-xs text-[var(--text-muted)]">Saturday mornings and Friday afternoons tend to be busiest.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Hours & Location Section */}
-        <section id="hours" className="py-20 bg-[var(--barber-bg)] border-t border-[var(--barber-border)]">
+        <section id="hours" className="py-20 bg-[var(--barber-surface)] border-t border-[var(--barber-border)]">
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
               {/* Hours */}
