@@ -36,7 +36,7 @@ export default async function HomePage() {
             </div>
 
             <a 
-              href="tel:740-357-0482"
+              href="tel:740-357-8269"
               className="px-5 py-2 bg-[var(--accent-red)] hover:bg-[var(--accent-red-light)] text-white font-semibold rounded-lg text-sm transition-all shadow-glow-red font-sans"
             >
               Call Now
@@ -91,9 +91,9 @@ export default async function HomePage() {
                   <Scissors size={22} />
                   View Services
                 </a>
-                <a href="tel:740-357-0482" className="inline-flex items-center gap-3 px-8 py-4 bg-[var(--barber-surface)] hover:bg-[var(--barber-elevated)] text-[var(--text-primary)] font-medium rounded-xl border border-[var(--barber-border)] transition-all font-sans">
+                <a href="tel:740-357-8269" className="inline-flex items-center gap-3 px-8 py-4 bg-[var(--barber-surface)] hover:bg-[var(--barber-elevated)] text-[var(--text-primary)] font-medium rounded-xl border border-[var(--barber-border)] transition-all font-sans">
                   <Phone size={20} />
-                  (740) 357-0482
+                  (740) 357-8269
                 </a>
               </div>
 
@@ -450,10 +450,10 @@ export default async function HomePage() {
                     </a>
                   </div>
                   
-                  <a href="tel:740-357-0482" className="flex items-center gap-4 p-4 rounded-xl bg-[var(--barber-bg)] border border-[var(--barber-border)] hover:border-[var(--accent-blue)] transition-colors">
+                  <a href="tel:740-357-8269" className="flex items-center gap-4 p-4 rounded-xl bg-[var(--barber-bg)] border border-[var(--barber-border)] hover:border-[var(--accent-blue)] transition-colors">
                     <Phone size={20} className="text-[var(--accent-blue)]" />
                     <div>
-                      <p className="text-[var(--text-primary)] font-medium font-sans">(740) 357-0482</p>
+                      <p className="text-[var(--text-primary)] font-medium font-sans">(740) 357-8269</p>
                       <p className="text-[var(--text-muted)] text-sm font-sans">Tap to call</p>
                     </div>
                   </a>
@@ -608,9 +608,9 @@ export default async function HomePage() {
               <h4 className="text-xs font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4 font-sans">Contact</h4>
               <ul className="space-y-3 text-sm text-[var(--text-muted)]">
                 <li>
-                  <a href="tel:740-357-0482" className="flex items-center gap-2 hover:text-[var(--text-secondary)] transition-colors font-sans">
+                  <a href="tel:740-357-8269" className="flex items-center gap-2 hover:text-[var(--text-secondary)] transition-colors font-sans">
                     <Phone size={14} className="text-[var(--accent-blue)]" />
-                    (740) 357-0482
+                    (740) 357-8269
                   </a>
                 </li>
                 <li className="flex items-start gap-2">
