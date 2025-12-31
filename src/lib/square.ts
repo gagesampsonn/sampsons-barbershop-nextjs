@@ -228,7 +228,8 @@ export async function getTopCustomers(days: number = 90, limit: number = 10): Pr
   
   for (const [customerId, spending] of sortedCustomers) {
     try {
-      const customer = await squareClient.customers.get({ customerId })
+      const response = await squareClient.customers.get({ customerId })
+      const customer = response as any
       
       const givenName = customer.givenName || ''
       const familyName = customer.familyName || ''
