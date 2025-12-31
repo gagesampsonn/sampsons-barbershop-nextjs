@@ -4,16 +4,11 @@ import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { 
-  DollarSign, 
-  TrendingUp, 
-  TrendingDown,
-  Users, 
-  Calendar,
-  Clock,
   ArrowLeft,
   RefreshCw,
-  Trophy,
-  Banknote
+  TrendingUp,
+  TrendingDown,
+  ChevronRight
 } from 'lucide-react'
 
 interface DailySales {
@@ -61,7 +56,6 @@ export default function AnalyticsPage() {
   }, [])
 
   useEffect(() => {
-    // Check auth
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
@@ -77,12 +71,28 @@ export default function AnalyticsPage() {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount)
+  }
+
+  const formatCurrencyDetailed = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
     }).format(amount)
   }
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', {
-      weekday: 'short',
+      weekday: 'long',
+      month: 'short',
+      day: 'numeric',
+    })
+  }
+
+  const formatShortDate = (dateStr: string) => {
+    return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
     })
@@ -95,10 +105,10 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--barber-bg)' }}>
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent-blue)] mx-auto mb-4"></div>
-          <p className="text-[var(--text-muted)]">Loading Square analytics...</p>
+          <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white/50 text-sm">Loading analytics...</p>
         </div>
       </div>
     )
@@ -106,18 +116,18 @@ export default function AnalyticsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--barber-bg)' }}>
-        <div className="text-center max-w-md">
-          <div className="w-16 h-16 rounded-full bg-[var(--accent-red)]/20 flex items-center justify-center mx-auto mb-4">
-            <DollarSign size={32} className="text-[var(--accent-red)]" />
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="text-center max-w-sm">
+          <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
+            <span className="text-red-400 text-xl">!</span>
           </div>
-          <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">Analytics Unavailable</h2>
-          <p className="text-[var(--text-muted)] mb-4">{error}</p>
+          <h2 className="text-white font-medium mb-2">Unable to Load</h2>
+          <p className="text-white/50 text-sm mb-6">{error}</p>
           <button 
             onClick={() => router.push('/admin')}
-            className="admin-btn-secondary"
+            className="text-sm text-white/70 hover:text-white transition-colors"
           >
-            Back to Admin
+            ← Back to Admin
           </button>
         </div>
       </div>
@@ -128,235 +138,194 @@ export default function AnalyticsPage() {
 
   const salesChange = getPercentChange(summary.today.grossSales, summary.yesterday.grossSales)
   const transactionChange = getPercentChange(summary.today.transactionCount, summary.yesterday.transactionCount)
+  const avgTransaction = summary.today.transactionCount > 0 
+    ? summary.today.grossSales / summary.today.transactionCount 
+    : 0
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--barber-bg)' }}>
-      {/* Header */}
-      <header className="border-b border-[var(--barber-border)] bg-[var(--barber-surface)]">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => router.push('/admin')}
-              className="p-2 rounded-lg hover:bg-[var(--barber-border)] transition-colors"
-            >
-              <ArrowLeft size={20} className="text-[var(--text-secondary)]" />
-            </button>
-            <div>
-              <h1 className="text-lg font-bold text-[var(--text-primary)]">Square Analytics</h1>
-              <p className="text-xs text-[var(--text-muted)]">
-                {lastUpdated && `Last updated: ${lastUpdated.toLocaleTimeString()}`}
-              </p>
-            </div>
-          </div>
+    <div className="min-h-screen bg-[#0a0a0a]">
+      {/* Navigation */}
+      <nav className="border-b border-white/5">
+        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+          <button 
+            onClick={() => router.push('/admin')}
+            className="flex items-center gap-2 text-white/50 hover:text-white transition-colors text-sm"
+          >
+            <ArrowLeft size={16} />
+            <span>Admin</span>
+          </button>
           <button 
             onClick={fetchAnalytics}
             disabled={loading}
-            className="admin-btn-secondary flex items-center gap-2"
+            className="flex items-center gap-2 text-white/50 hover:text-white transition-colors text-sm"
           >
-            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-            Refresh
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+            <span className="hidden sm:inline">
+              {lastUpdated ? lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Refresh'}
+            </span>
           </button>
         </div>
-      </header>
+      </nav>
 
-      <main className="max-w-6xl mx-auto px-6 py-8 space-y-8">
-        {/* Today's Stats */}
-        <section>
-          <h2 className="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">Today&apos;s Performance</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* Gross Sales */}
-            <div className="admin-card">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-[var(--text-muted)] mb-1">Gross Sales</p>
-                  <p className="text-3xl font-bold text-[var(--text-primary)]">
-                    {formatCurrency(summary.today.grossSales)}
-                  </p>
-                </div>
-                <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                  salesChange >= 0 
-                    ? 'bg-green-500/20 text-green-400' 
-                    : 'bg-[var(--accent-red)]/20 text-[var(--accent-red)]'
-                }`}>
+      <main className="max-w-5xl mx-auto px-6 py-12">
+        {/* Header */}
+        <header className="mb-12">
+          <h1 className="text-3xl font-light text-white tracking-tight mb-1">Analytics</h1>
+          <p className="text-white/40 text-sm">Square payment data overview</p>
+        </header>
+
+        {/* Today's Overview - Large Cards */}
+        <section className="mb-16">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Revenue */}
+            <div className="col-span-2 bg-gradient-to-br from-white/[0.03] to-transparent border border-white/5 rounded-2xl p-6">
+              <div className="flex items-start justify-between mb-6">
+                <span className="text-white/40 text-xs uppercase tracking-widest">Today&apos;s Revenue</span>
+                <div className={`flex items-center gap-1 text-xs ${salesChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                   {salesChange >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                  {Math.abs(salesChange).toFixed(1)}%
+                  {Math.abs(salesChange).toFixed(0)}%
                 </div>
               </div>
-              <p className="text-xs text-[var(--text-muted)] mt-2">
-                vs yesterday: {formatCurrency(summary.yesterday.grossSales)}
-              </p>
+              <div className="text-5xl font-light text-white tracking-tight mb-2">
+                {formatCurrency(summary.today.grossSales)}
+              </div>
+              <div className="text-white/30 text-sm">
+                Yesterday: {formatCurrencyDetailed(summary.yesterday.grossSales)}
+              </div>
             </div>
 
             {/* Transactions */}
-            <div className="admin-card">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-[var(--text-muted)] mb-1">Transactions</p>
-                  <p className="text-3xl font-bold text-[var(--text-primary)]">
-                    {summary.today.transactionCount}
-                  </p>
+            <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6">
+              <span className="text-white/40 text-xs uppercase tracking-widest">Transactions</span>
+              <div className="mt-6">
+                <div className="text-4xl font-light text-white tracking-tight">
+                  {summary.today.transactionCount}
                 </div>
-                <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                  transactionChange >= 0 
-                    ? 'bg-green-500/20 text-green-400' 
-                    : 'bg-[var(--accent-red)]/20 text-[var(--accent-red)]'
-                }`}>
+                <div className={`flex items-center gap-1 mt-2 text-xs ${transactionChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                   {transactionChange >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                  {Math.abs(transactionChange).toFixed(1)}%
+                  {Math.abs(transactionChange).toFixed(0)}% vs yesterday
                 </div>
               </div>
-              <p className="text-xs text-[var(--text-muted)] mt-2">
-                vs yesterday: {summary.yesterday.transactionCount}
-              </p>
             </div>
 
             {/* Tips */}
-            <div className="admin-card">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-[var(--text-muted)] mb-1">Tips</p>
-                  <p className="text-3xl font-bold text-green-400">
-                    {formatCurrency(summary.today.tips)}
-                  </p>
+            <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6">
+              <span className="text-white/40 text-xs uppercase tracking-widest">Tips</span>
+              <div className="mt-6">
+                <div className="text-4xl font-light text-emerald-400 tracking-tight">
+                  {formatCurrency(summary.today.tips)}
                 </div>
-                <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                  <Banknote size={20} className="text-green-400" />
+                <div className="text-white/30 text-xs mt-2">
+                  {summary.today.grossSales > 0 
+                    ? `${((summary.today.tips / summary.today.grossSales) * 100).toFixed(1)}% of sales`
+                    : '—'}
                 </div>
               </div>
-              <p className="text-xs text-[var(--text-muted)] mt-2">
-                {summary.today.grossSales > 0 
-                  ? `${((summary.today.tips / summary.today.grossSales) * 100).toFixed(1)}% of sales`
-                  : 'No sales yet'}
-              </p>
             </div>
+          </div>
 
-            {/* Average Transaction */}
-            <div className="admin-card">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-[var(--text-muted)] mb-1">Avg Transaction</p>
-                  <p className="text-3xl font-bold text-[var(--accent-blue)]">
-                    {summary.today.transactionCount > 0 
-                      ? formatCurrency(summary.today.grossSales / summary.today.transactionCount)
-                      : '$0.00'}
-                  </p>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-[var(--accent-blue)]/20 flex items-center justify-center">
-                  <Users size={20} className="text-[var(--accent-blue)]" />
-                </div>
-              </div>
-              <p className="text-xs text-[var(--text-muted)] mt-2">
-                per customer
-              </p>
+          {/* Average ticket - small inline stat */}
+          <div className="mt-4 flex items-center gap-6 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-white/40">Avg ticket:</span>
+              <span className="text-white font-medium">{formatCurrencyDetailed(avgTransaction)}</span>
             </div>
           </div>
         </section>
 
-        {/* Period Summaries */}
-        <section>
-          <h2 className="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">Period Summaries</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Period Stats */}
+        <section className="mb-16">
+          <h2 className="text-xs uppercase tracking-widest text-white/40 mb-6">Period Summary</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/5 rounded-2xl overflow-hidden">
             {/* This Week */}
-            <div className="admin-card">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-[var(--accent-blue)]/20 flex items-center justify-center">
-                  <Calendar size={20} className="text-[var(--accent-blue)]" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-[var(--text-primary)]">This Week</h3>
-                  <p className="text-xs text-[var(--text-muted)]">Sunday - Today</p>
-                </div>
+            <div className="bg-[#0a0a0a] p-6">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-white/60 text-sm">This Week</span>
+                <span className="text-white/30 text-xs">Sun – Today</span>
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <p className="text-xs text-[var(--text-muted)]">Sales</p>
-                  <p className="text-lg font-bold text-[var(--text-primary)]">{formatCurrency(summary.thisWeek.grossSales)}</p>
+                  <div className="text-2xl font-light text-white">{formatCurrency(summary.thisWeek.grossSales)}</div>
+                  <div className="text-white/30 text-xs mt-1">revenue</div>
                 </div>
                 <div>
-                  <p className="text-xs text-[var(--text-muted)]">Transactions</p>
-                  <p className="text-lg font-bold text-[var(--text-primary)]">{summary.thisWeek.transactionCount}</p>
+                  <div className="text-2xl font-light text-white">{summary.thisWeek.transactionCount}</div>
+                  <div className="text-white/30 text-xs mt-1">customers</div>
                 </div>
                 <div>
-                  <p className="text-xs text-[var(--text-muted)]">Tips</p>
-                  <p className="text-lg font-bold text-green-400">{formatCurrency(summary.thisWeek.tips)}</p>
+                  <div className="text-2xl font-light text-emerald-400">{formatCurrency(summary.thisWeek.tips)}</div>
+                  <div className="text-white/30 text-xs mt-1">tips</div>
                 </div>
               </div>
             </div>
 
             {/* This Month */}
-            <div className="admin-card">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-[var(--accent-red)]/20 flex items-center justify-center">
-                  <Clock size={20} className="text-[var(--accent-red)]" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-[var(--text-primary)]">This Month</h3>
-                  <p className="text-xs text-[var(--text-muted)]">{new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>
-                </div>
+            <div className="bg-[#0a0a0a] p-6">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-white/60 text-sm">This Month</span>
+                <span className="text-white/30 text-xs">{new Date().toLocaleDateString('en-US', { month: 'long' })}</span>
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <p className="text-xs text-[var(--text-muted)]">Sales</p>
-                  <p className="text-lg font-bold text-[var(--text-primary)]">{formatCurrency(summary.thisMonth.grossSales)}</p>
+                  <div className="text-2xl font-light text-white">{formatCurrency(summary.thisMonth.grossSales)}</div>
+                  <div className="text-white/30 text-xs mt-1">revenue</div>
                 </div>
                 <div>
-                  <p className="text-xs text-[var(--text-muted)]">Transactions</p>
-                  <p className="text-lg font-bold text-[var(--text-primary)]">{summary.thisMonth.transactionCount}</p>
+                  <div className="text-2xl font-light text-white">{summary.thisMonth.transactionCount}</div>
+                  <div className="text-white/30 text-xs mt-1">customers</div>
                 </div>
                 <div>
-                  <p className="text-xs text-[var(--text-muted)]">Tips</p>
-                  <p className="text-lg font-bold text-green-400">{formatCurrency(summary.thisMonth.tips)}</p>
+                  <div className="text-2xl font-light text-emerald-400">{formatCurrency(summary.thisMonth.tips)}</div>
+                  <div className="text-white/30 text-xs mt-1">tips</div>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Top 10 Busiest Days */}
+        {/* Top Days */}
         <section>
-          <div className="flex items-center gap-3 mb-4">
-            <Trophy size={20} className="text-yellow-400" />
-            <h2 className="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider">Top 10 Busiest Days (Last 90 Days)</h2>
-          </div>
-          <div className="admin-card">
-            {summary.topDays.length === 0 ? (
-              <div className="text-center py-8 text-[var(--text-muted)]">
-                <Trophy size={48} className="mx-auto mb-4 opacity-50" />
-                <p>No transaction data available yet</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {summary.topDays.map((day, index) => (
-                  <div 
-                    key={day.date}
-                    className="flex items-center justify-between p-3 rounded-lg bg-[var(--barber-bg)] border border-[var(--barber-border)]"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
-                        index === 0 ? 'bg-yellow-500/20 text-yellow-400' :
-                        index === 1 ? 'bg-gray-400/20 text-gray-400' :
-                        index === 2 ? 'bg-orange-500/20 text-orange-400' :
-                        'bg-[var(--barber-border)] text-[var(--text-muted)]'
-                      }`}>
-                        #{index + 1}
-                      </div>
-                      <div>
-                        <p className="font-medium text-[var(--text-primary)]">{formatDate(day.date)}</p>
-                        <p className="text-xs text-[var(--text-muted)]">{day.transactionCount} customers</p>
-                      </div>
+          <h2 className="text-xs uppercase tracking-widest text-white/40 mb-6">Busiest Days — Last 90 Days</h2>
+          
+          {summary.topDays.length === 0 ? (
+            <div className="text-center py-16 text-white/30">
+              No transaction data available
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {summary.topDays.slice(0, 10).map((day, index) => (
+                <div 
+                  key={day.date}
+                  className="group flex items-center justify-between p-4 rounded-xl hover:bg-white/[0.02] transition-colors"
+                >
+                  <div className="flex items-center gap-5">
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${
+                      index === 0 ? 'bg-amber-500/20 text-amber-400' :
+                      index === 1 ? 'bg-white/10 text-white/60' :
+                      index === 2 ? 'bg-orange-500/20 text-orange-400' :
+                      'bg-white/5 text-white/30'
+                    }`}>
+                      {index + 1}
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-[var(--text-primary)]">{formatCurrency(day.grossSales)}</p>
-                      <p className="text-xs text-green-400">+{formatCurrency(day.tips)} tips</p>
+                    <div>
+                      <div className="text-white text-sm">{formatDate(day.date)}</div>
+                      <div className="text-white/30 text-xs">{day.transactionCount} customers</div>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                  <div className="flex items-center gap-6">
+                    <div className="text-right">
+                      <div className="text-white text-sm font-medium">{formatCurrencyDetailed(day.grossSales)}</div>
+                      <div className="text-emerald-400/70 text-xs">+{formatCurrencyDetailed(day.tips)} tips</div>
+                    </div>
+                    <ChevronRight size={16} className="text-white/10 group-hover:text-white/30 transition-colors" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
       </main>
     </div>
   )
 }
-
