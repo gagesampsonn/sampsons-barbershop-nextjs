@@ -18,20 +18,25 @@ import {
 import { 
   WeeklyHours, 
   HourException, 
+  Service,
   DAY_NAMES, 
   generateTimeOptions, 
   formatTimeForDisplay 
 } from '@/lib/types'
+import { DollarSign } from 'lucide-react'
 
 const TIME_OPTIONS = generateTimeOptions()
 
 export default function AdminPage() {
   const [weeklyHours, setWeeklyHours] = useState<WeeklyHours[]>([])
   const [exceptions, setExceptions] = useState<HourException[]>([])
+  const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [showExceptionModal, setShowExceptionModal] = useState(false)
+  const [showServiceModal, setShowServiceModal] = useState(false)
   const [editingException, setEditingException] = useState<HourException | null>(null)
+  const [editingService, setEditingService] = useState<Service | null>(null)
   const [userEmail, setUserEmail] = useState<string>('')
   const router = useRouter()
   const supabase = createClient()
@@ -44,6 +49,16 @@ export default function AdminPage() {
     open_time: '09:00:00',
     close_time: '17:00:00',
     notes: ''
+  })
+
+  // Service form state
+  const [serviceForm, setServiceForm] = useState({
+    name: '',
+    description: '',
+    price: '',
+    icon: 'scissors' as 'scissors' | 'user' | 'userCheck',
+    accent_color: 'red' as 'red' | 'blue',
+    display_order: 0
   })
 
   const fetchData = useCallback(async () => {
@@ -92,6 +107,24 @@ export default function AdminPage() {
 
       if (exceptionsError) throw exceptionsError
       setExceptions(exceptionsData || [])
+
+      // Fetch services
+      const { data: servicesData, error: servicesError } = await supabase
+        .from('services')
+        .select('*')
+        .order('display_order')
+
+      if (servicesError) {
+        console.error('Services table may not exist yet:', servicesError)
+        // Set default services if table doesn't exist
+        setServices([
+          { id: 'default-1', name: 'Haircut', description: 'Classic haircut tailored to your style. Includes consultation, cut, and styling.', price: 10, icon: 'scissors', accent_color: 'red', display_order: 1, is_active: true, updated_at: new Date().toISOString() },
+          { id: 'default-2', name: 'Beard Trim', description: 'Professional beard shaping and trimming. Keep your facial hair looking sharp.', price: 8, icon: 'user', accent_color: 'blue', display_order: 2, is_active: true, updated_at: new Date().toISOString() },
+          { id: 'default-3', name: 'Senior Haircut', description: 'Quality haircut for our valued senior customers (65+). Same great service.', price: 9, icon: 'userCheck', accent_color: 'red', display_order: 3, is_active: true, updated_at: new Date().toISOString() }
+        ])
+      } else {
+        setServices(servicesData || [])
+      }
 
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -238,6 +271,103 @@ export default function AdminPage() {
       notes: exception.notes || ''
     })
     setShowExceptionModal(true)
+  }
+
+  // Service functions
+  async function saveService() {
+    if (!serviceForm.name || !serviceForm.price) {
+      toast.error('Name and price are required')
+      return
+    }
+
+    const priceNum = parseFloat(serviceForm.price)
+    if (isNaN(priceNum) || priceNum < 0) {
+      toast.error('Please enter a valid price')
+      return
+    }
+
+    setSaving(true)
+    try {
+      const serviceData = {
+        name: serviceForm.name,
+        description: serviceForm.description || null,
+        price: priceNum,
+        icon: serviceForm.icon,
+        accent_color: serviceForm.accent_color,
+        display_order: serviceForm.display_order || services.length + 1,
+        is_active: true,
+        updated_at: new Date().toISOString()
+      }
+
+      if (editingService) {
+        const { error } = await supabase
+          .from('services')
+          .update(serviceData)
+          .eq('id', editingService.id)
+
+        if (error) throw error
+        toast.success('Service updated!')
+      } else {
+        const { error } = await supabase
+          .from('services')
+          .insert(serviceData)
+
+        if (error) throw error
+        toast.success('Service added!')
+      }
+
+      setShowServiceModal(false)
+      setEditingService(null)
+      resetServiceForm()
+      fetchData()
+    } catch (error) {
+      console.error('Error saving service:', error)
+      toast.error('Failed to save service. Make sure to run the database migration first.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function deleteService(id: string) {
+    if (!confirm('Delete this service?')) return
+
+    try {
+      const { error } = await supabase
+        .from('services')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+      toast.success('Service deleted!')
+      fetchData()
+    } catch (error) {
+      console.error('Error deleting:', error)
+      toast.error('Failed to delete service')
+    }
+  }
+
+  function resetServiceForm() {
+    setServiceForm({
+      name: '',
+      description: '',
+      price: '',
+      icon: 'scissors',
+      accent_color: 'red',
+      display_order: 0
+    })
+  }
+
+  function openEditService(service: Service) {
+    setEditingService(service)
+    setServiceForm({
+      name: service.name,
+      description: service.description || '',
+      price: service.price.toString(),
+      icon: service.icon,
+      accent_color: service.accent_color,
+      display_order: service.display_order
+    })
+    setShowServiceModal(true)
   }
 
   if (loading) {
@@ -431,6 +561,81 @@ export default function AdminPage() {
             </div>
           )}
         </section>
+
+        {/* Pricing Section */}
+        <section className="admin-card">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <DollarSign size={24} className="text-green-500" />
+              <h2 className="text-xl font-bold text-[var(--text-primary)]">Service Pricing</h2>
+            </div>
+            <button 
+              onClick={() => {
+                resetServiceForm()
+                setEditingService(null)
+                setShowServiceModal(true)
+              }}
+              className="admin-btn-primary flex items-center gap-2"
+            >
+              <Plus size={16} />
+              Add Service
+            </button>
+          </div>
+
+          {services.length === 0 ? (
+            <div className="text-center py-12 text-[var(--text-muted)]">
+              <DollarSign size={48} className="mx-auto mb-4 opacity-50" />
+              <p>No services configured</p>
+              <p className="text-sm mt-2">Add your first service above</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {services.map((service) => (
+                <div 
+                  key={service.id}
+                  className="flex items-center justify-between p-4 rounded-lg bg-[var(--barber-bg)] border border-[var(--barber-border)]"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                      service.accent_color === 'red' 
+                        ? 'bg-[var(--accent-red)]/20 text-[var(--accent-red)]'
+                        : 'bg-[var(--accent-blue)]/20 text-[var(--accent-blue)]'
+                    }`}>
+                      {service.icon === 'scissors' && <Scissors size={20} />}
+                      {service.icon === 'user' && <span className="text-lg">👤</span>}
+                      {service.icon === 'userCheck' && <span className="text-lg">✓</span>}
+                    </div>
+                    <div>
+                      <p className="font-medium text-[var(--text-primary)]">{service.name}</p>
+                      <p className="text-sm text-[var(--text-muted)]">{service.description}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-2xl font-bold text-green-500">${service.price}</span>
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => openEditService(service)}
+                        className="p-2 rounded-lg hover:bg-[var(--barber-border)] transition-colors"
+                      >
+                        <Edit2 size={16} className="text-[var(--text-secondary)]" />
+                      </button>
+                      <button 
+                        onClick={() => deleteService(service.id)}
+                        className="p-2 rounded-lg hover:bg-[var(--accent-red)]/20 transition-colors"
+                      >
+                        <Trash2 size={16} className="text-[var(--accent-red)]" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <p className="text-sm text-[var(--text-muted)] mt-4 pt-4 border-t border-[var(--barber-border)]">
+            💡 Changes to pricing will automatically update on the website within 60 seconds.
+          </p>
+        </section>
       </main>
 
       {/* Exception Modal */}
@@ -566,6 +771,133 @@ export default function AdminPage() {
                 className="admin-btn-primary flex-1"
               >
                 {saving ? 'Saving...' : editingException ? 'Update' : 'Add'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Service Modal */}
+      {showServiceModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
+          <div className="admin-card w-full max-w-md">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-[var(--text-primary)]">
+                {editingService ? 'Edit Service' : 'Add Service'}
+              </h3>
+              <button 
+                onClick={() => {
+                  setShowServiceModal(false)
+                  setEditingService(null)
+                }}
+                className="p-2 rounded-lg hover:bg-[var(--barber-border)] transition-colors"
+              >
+                <X size={20} className="text-[var(--text-muted)]" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                  Service Name
+                </label>
+                <input
+                  type="text"
+                  value={serviceForm.name}
+                  onChange={(e) => setServiceForm(prev => ({ ...prev, name: e.target.value }))}
+                  className="admin-input"
+                  placeholder="e.g. Haircut"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                  Description
+                </label>
+                <textarea
+                  value={serviceForm.description}
+                  onChange={(e) => setServiceForm(prev => ({ ...prev, description: e.target.value }))}
+                  className="admin-input h-20 resize-none"
+                  placeholder="Brief description of the service..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                  Price ($)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={serviceForm.price}
+                  onChange={(e) => setServiceForm(prev => ({ ...prev, price: e.target.value }))}
+                  className="admin-input"
+                  placeholder="10.00"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                    Icon
+                  </label>
+                  <select
+                    value={serviceForm.icon}
+                    onChange={(e) => setServiceForm(prev => ({ ...prev, icon: e.target.value as 'scissors' | 'user' | 'userCheck' }))}
+                    className="admin-select w-full"
+                  >
+                    <option value="scissors">✂️ Scissors</option>
+                    <option value="user">👤 Person</option>
+                    <option value="userCheck">✓ Senior</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                    Color
+                  </label>
+                  <select
+                    value={serviceForm.accent_color}
+                    onChange={(e) => setServiceForm(prev => ({ ...prev, accent_color: e.target.value as 'red' | 'blue' }))}
+                    className="admin-select w-full"
+                  >
+                    <option value="red">🔴 Red</option>
+                    <option value="blue">🔵 Blue</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                  Display Order
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={serviceForm.display_order || ''}
+                  onChange={(e) => setServiceForm(prev => ({ ...prev, display_order: parseInt(e.target.value) || 0 }))}
+                  className="admin-input"
+                  placeholder="1"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowServiceModal(false)
+                  setEditingService(null)
+                }}
+                className="admin-btn-secondary flex-1"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={saveService}
+                disabled={saving}
+                className="admin-btn-primary flex-1"
+              >
+                {saving ? 'Saving...' : editingService ? 'Update' : 'Add'}
               </button>
             </div>
           </div>

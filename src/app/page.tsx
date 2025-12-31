@@ -1,14 +1,30 @@
 import { Scissors, MapPin, Phone, Star, Clock, Navigation, User, UserCheck, Users, AlertTriangle, Calendar } from 'lucide-react'
 import Image from 'next/image'
 import { getWeeklyHours, getUpcomingExceptions, isCurrentlyOpen, formatHoursForDay } from '@/lib/hours'
-import { DAY_NAMES, formatTimeForDisplay } from '@/lib/types'
+import { getServices } from '@/lib/services'
+import { DAY_NAMES, formatTimeForDisplay, Service } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 60
 
+// Helper to get the icon component for a service
+const ServiceIcon = ({ icon, size = 32 }: { icon: string; size?: number }) => {
+  switch (icon) {
+    case 'scissors':
+      return <Scissors size={size} strokeWidth={1.5} />
+    case 'user':
+      return <User size={size} strokeWidth={1.5} />
+    case 'userCheck':
+      return <UserCheck size={size} strokeWidth={1.5} />
+    default:
+      return <Scissors size={size} strokeWidth={1.5} />
+  }
+}
+
 export default async function HomePage() {
   const weeklyHours = await getWeeklyHours()
   const exceptions = await getUpcomingExceptions()
+  const services = await getServices()
   const isOpen = isCurrentlyOpen(weeklyHours, exceptions)
 
   // Get the soonest upcoming exception to feature in the banner
@@ -191,23 +207,19 @@ export default async function HomePage() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              {[
-                { icon: Scissors, name: 'Haircut', price: 10, desc: 'Classic haircut tailored to your style. Includes consultation, cut, and styling.', accent: 'red' },
-                { icon: User, name: 'Beard Trim', price: 8, desc: 'Professional beard shaping and trimming. Keep your facial hair looking sharp.', accent: 'blue' },
-                { icon: UserCheck, name: 'Senior Haircut', price: 9, desc: 'Quality haircut for our valued senior customers (65+). Same great service.', accent: 'red' }
-              ].map((service, idx) => (
-                <div key={idx} className="group relative bg-[var(--barber-bg)] rounded-xl border border-[var(--barber-border)] p-8 hover:border-[var(--barber-border-light)] transition-all duration-300 text-center">
-                  <div className={`absolute top-0 left-0 right-0 h-1 ${service.accent === 'red' ? 'bg-[var(--accent-red)]' : 'bg-[var(--accent-blue)]'}`}></div>
+              {services.map((service) => (
+                <div key={service.id} className="group relative bg-[var(--barber-bg)] rounded-xl border border-[var(--barber-border)] p-8 hover:border-[var(--barber-border-light)] transition-all duration-300 text-center">
+                  <div className={`absolute top-0 left-0 right-0 h-1 ${service.accent_color === 'red' ? 'bg-[var(--accent-red)]' : 'bg-[var(--accent-blue)]'}`}></div>
                   
-                  <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-6 mx-auto ${service.accent === 'red' ? 'bg-[var(--accent-red)]/10 text-[var(--accent-red)]' : 'bg-[var(--accent-blue)]/10 text-[var(--accent-blue)]'}`}>
-                    <service.icon size={32} strokeWidth={1.5} />
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-6 mx-auto ${service.accent_color === 'red' ? 'bg-[var(--accent-red)]/10 text-[var(--accent-red)]' : 'bg-[var(--accent-blue)]/10 text-[var(--accent-blue)]'}`}>
+                    <ServiceIcon icon={service.icon} />
                   </div>
                   
                   <h3 className="text-xl font-semibold text-[var(--text-primary)] mb-2 font-sans">{service.name}</h3>
-                  <p className="text-[var(--text-muted)] text-sm leading-relaxed mb-6">{service.desc}</p>
+                  <p className="text-[var(--text-muted)] text-sm leading-relaxed mb-6">{service.description}</p>
                   
                   <div className="flex items-baseline justify-center gap-1">
-                    <span className={`text-4xl font-bold font-sans ${service.accent === 'red' ? 'text-[var(--accent-red)]' : 'text-[var(--accent-blue)]'}`}>
+                    <span className={`text-4xl font-bold font-sans ${service.accent_color === 'red' ? 'text-[var(--accent-red)]' : 'text-[var(--accent-blue)]'}`}>
                       ${service.price}
                     </span>
                   </div>
@@ -609,18 +621,12 @@ export default async function HomePage() {
               
               <div className="mt-10 pt-8 border-t border-[var(--barber-border)]">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
-                  <div>
-                    <p className="text-2xl font-bold text-[var(--accent-red)] font-sans">$10</p>
-                    <p className="text-[var(--text-muted)] text-sm font-sans">Haircut</p>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-[var(--accent-blue)] font-sans">$8</p>
-                    <p className="text-[var(--text-muted)] text-sm font-sans">Beard Trim</p>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-[var(--accent-red)] font-sans">$9</p>
-                    <p className="text-[var(--text-muted)] text-sm font-sans">Senior Cut</p>
-                  </div>
+                  {services.slice(0, 3).map((service) => (
+                    <div key={service.id}>
+                      <p className={`text-2xl font-bold font-sans ${service.accent_color === 'red' ? 'text-[var(--accent-red)]' : 'text-[var(--accent-blue)]'}`}>${service.price}</p>
+                      <p className="text-[var(--text-muted)] text-sm font-sans">{service.name}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

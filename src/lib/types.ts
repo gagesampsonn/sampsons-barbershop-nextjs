@@ -18,6 +18,18 @@ export interface HourException {
   updated_at: string
 }
 
+export interface Service {
+  id: string
+  name: string
+  description: string | null
+  price: number
+  icon: 'scissors' | 'user' | 'userCheck'
+  accent_color: 'red' | 'blue'
+  display_order: number
+  is_active: boolean
+  updated_at: string
+}
+
 export const DAY_NAMES = [
   'Sunday',
   'Monday',
