@@ -7,7 +7,13 @@ import {
   ArrowLeft,
   RefreshCw,
   TrendingUp,
-  TrendingDown
+  TrendingDown,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Phone,
+  Mail,
+  User
 } from 'lucide-react'
 
 interface DailySales {
@@ -26,11 +32,30 @@ interface PaymentSummary {
   topDays: DailySales[]
 }
 
+interface TopCustomer {
+  id: string
+  name: string
+  email?: string
+  phone?: string
+  totalSpent: number
+  visitCount: number
+}
+
+interface CalendarData {
+  calendar: { [day: number]: DailySales }
+  topDays: DailySales[]
+}
+
 export default function AnalyticsPage() {
   const [summary, setSummary] = useState<PaymentSummary | null>(null)
+  const [customers, setCustomers] = useState<TopCustomer[]>([])
+  const [calendarData, setCalendarData] = useState<CalendarData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [selectedCustomer, setSelectedCustomer] = useState<TopCustomer | null>(null)
+  const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth())
+  const [calendarYear, setCalendarYear] = useState(new Date().getFullYear())
   const router = useRouter()
   const supabase = createClient()
 
@@ -39,12 +64,21 @@ export default function AnalyticsPage() {
     setError(null)
     
     try {
-      const response = await fetch('/api/square/analytics')
-      if (!response.ok) {
-        throw new Error('Failed to fetch analytics')
+      const [summaryRes, customersRes] = await Promise.all([
+        fetch('/api/square/analytics'),
+        fetch('/api/square/customers')
+      ])
+      
+      if (!summaryRes.ok) throw new Error('Failed to fetch analytics')
+      
+      const summaryData = await summaryRes.json()
+      setSummary(summaryData)
+      
+      if (customersRes.ok) {
+        const customersData = await customersRes.json()
+        setCustomers(customersData)
       }
-      const data = await response.json()
-      setSummary(data)
+      
       setLastUpdated(new Date())
     } catch (err) {
       console.error('Error fetching analytics:', err)
@@ -53,6 +87,18 @@ export default function AnalyticsPage() {
       setLoading(false)
     }
   }, [])
+
+  const fetchCalendar = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/square/calendar?year=${calendarYear}&month=${calendarMonth}`)
+      if (res.ok) {
+        const data = await res.json()
+        setCalendarData(data)
+      }
+    } catch (err) {
+      console.error('Error fetching calendar:', err)
+    }
+  }, [calendarYear, calendarMonth])
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -65,6 +111,12 @@ export default function AnalyticsPage() {
     }
     checkAuth()
   }, [supabase, router, fetchAnalytics])
+
+  useEffect(() => {
+    if (!loading && !error) {
+      fetchCalendar()
+    }
+  }, [calendarMonth, calendarYear, loading, error, fetchCalendar])
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -93,6 +145,38 @@ export default function AnalyticsPage() {
   const getPercentChange = (current: number, previous: number) => {
     if (previous === 0) return current > 0 ? 100 : 0
     return ((current - previous) / previous) * 100
+  }
+
+  const getDaysInMonth = (year: number, month: number) => {
+    return new Date(year, month + 1, 0).getDate()
+  }
+
+  const getFirstDayOfMonth = (year: number, month: number) => {
+    return new Date(year, month, 1).getDay()
+  }
+
+  const getTopDayRank = (dateStr: string): number | null => {
+    if (!calendarData?.topDays) return null
+    const index = calendarData.topDays.findIndex(d => d.date === dateStr)
+    return index >= 0 ? index + 1 : null
+  }
+
+  const navigateMonth = (direction: 'prev' | 'next') => {
+    if (direction === 'prev') {
+      if (calendarMonth === 0) {
+        setCalendarMonth(11)
+        setCalendarYear(calendarYear - 1)
+      } else {
+        setCalendarMonth(calendarMonth - 1)
+      }
+    } else {
+      if (calendarMonth === 11) {
+        setCalendarMonth(0)
+        setCalendarYear(calendarYear + 1)
+      } else {
+        setCalendarMonth(calendarMonth + 1)
+      }
+    }
   }
 
   if (loading) {
@@ -130,9 +214,63 @@ export default function AnalyticsPage() {
 
   const salesChange = getPercentChange(summary.today.grossSales, summary.yesterday.grossSales)
   const transactionChange = getPercentChange(summary.today.transactionCount, summary.yesterday.transactionCount)
+  const topCustomer = customers[0]
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1a1a1a] to-[#0d0d0d]">
+      {/* Customer Detail Modal */}
+      {selectedCustomer && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedCustomer(null)}>
+          <div 
+            className="w-full max-w-sm bg-gradient-to-b from-[#1f1f1f] to-[#161616] rounded-2xl border border-[#2a2a2a] overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="p-5 border-b border-[#252525]">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-[#e8e8e8] font-medium">Customer Details</h3>
+                <button onClick={() => setSelectedCustomer(null)} className="text-[#6a6a6a] hover:text-white p-1">
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#c9a227]/20 to-[#8b7019]/10 flex items-center justify-center border border-[#c9a227]/20">
+                  <User size={20} className="text-[#c9a227]" />
+                </div>
+                <div>
+                  <p className="text-[#f0f0f0] font-medium">{selectedCustomer.name}</p>
+                  <p className="text-[#5a5a5a] text-sm">{selectedCustomer.visitCount} visits</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-5 space-y-4">
+              {selectedCustomer.phone && (
+                <a href={`tel:${selectedCustomer.phone}`} className="flex items-center gap-3 text-[#8a8a8a] hover:text-[#c9a227] transition-colors">
+                  <Phone size={16} />
+                  <span className="text-sm">{selectedCustomer.phone}</span>
+                </a>
+              )}
+              {selectedCustomer.email && (
+                <a href={`mailto:${selectedCustomer.email}`} className="flex items-center gap-3 text-[#8a8a8a] hover:text-[#c9a227] transition-colors">
+                  <Mail size={16} />
+                  <span className="text-sm">{selectedCustomer.email}</span>
+                </a>
+              )}
+              {!selectedCustomer.phone && !selectedCustomer.email && (
+                <p className="text-[#4a4a4a] text-sm text-center py-2">No contact info available</p>
+              )}
+              
+              <div className="pt-4 border-t border-[#252525]">
+                <p className="text-[#5a5a5a] text-xs uppercase tracking-wider mb-2">Total Spent (90 Days)</p>
+                <p className="text-2xl font-light text-[#c9a227]" style={{ textShadow: '0 0 30px rgba(201, 162, 39, 0.2)' }}>
+                  {formatCurrencyDetailed(selectedCustomer.totalSpent)}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-10 backdrop-blur-xl bg-[#1a1a1a]/80 border-b border-[#2a2a2a]">
         <div className="flex items-center justify-between px-5 h-16">
@@ -143,7 +281,7 @@ export default function AnalyticsPage() {
             <ArrowLeft size={18} strokeWidth={1.5} />
           </button>
           <div className="text-center">
-            <span className="text-[#e8e8e8] font-medium tracking-wide text-sm">Square Analytics</span>
+            <span className="text-[#e8e8e8] font-medium tracking-wide text-sm">Analytics</span>
           </div>
           <button 
             onClick={fetchAnalytics}
@@ -159,25 +297,20 @@ export default function AnalyticsPage() {
         {/* Today's Revenue - Hero */}
         <section className="mb-10">
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1f1f1f] via-[#1a1a1a] to-[#141414] border border-[#2a2a2a] p-6">
-            {/* Subtle gold accent line */}
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#c9a227]/30 to-transparent"></div>
             
             <div className="text-center">
               <p className="text-[#6a6a6a] text-xs uppercase tracking-[0.2em] mb-4">Today&apos;s Revenue</p>
               
-              {/* Main number with soft glow */}
               <div className="relative inline-block">
                 <div 
                   className="text-5xl font-light text-[#f5f5f5] tracking-tight"
-                  style={{ 
-                    textShadow: summary.today.grossSales > 0 ? '0 0 40px rgba(201, 162, 39, 0.15)' : 'none' 
-                  }}
+                  style={{ textShadow: summary.today.grossSales > 0 ? '0 0 40px rgba(201, 162, 39, 0.15)' : 'none' }}
                 >
                   {formatCurrency(summary.today.grossSales)}
                 </div>
               </div>
 
-              {/* Change indicator */}
               <div className={`inline-flex items-center gap-1.5 mt-4 px-3 py-1.5 rounded-full text-xs tracking-wide ${
                 salesChange >= 0 
                   ? 'bg-[#1a2f1a] text-[#5a9a5a] border border-[#2a3f2a]' 
@@ -194,20 +327,14 @@ export default function AnalyticsPage() {
         <section className="mb-10">
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-[#161616] rounded-2xl p-4 text-center border border-[#222]">
-              <div 
-                className="text-2xl font-light text-[#f0f0f0] mb-1"
-                style={{ textShadow: '0 0 30px rgba(201, 162, 39, 0.1)' }}
-              >
+              <div className="text-2xl font-light text-[#f0f0f0] mb-1" style={{ textShadow: '0 0 30px rgba(201, 162, 39, 0.1)' }}>
                 {summary.today.transactionCount}
               </div>
               <div className="text-[#5a5a5a] text-[10px] uppercase tracking-[0.15em]">Customers</div>
             </div>
             
             <div className="bg-[#161616] rounded-2xl p-4 text-center border border-[#222]">
-              <div 
-                className="text-2xl font-light text-[#c9a227] mb-1"
-                style={{ textShadow: '0 0 30px rgba(201, 162, 39, 0.2)' }}
-              >
+              <div className="text-2xl font-light text-[#c9a227] mb-1" style={{ textShadow: '0 0 30px rgba(201, 162, 39, 0.2)' }}>
                 {formatCurrency(summary.today.tips)}
               </div>
               <div className="text-[#5a5a5a] text-[10px] uppercase tracking-[0.15em]">Tips</div>
@@ -229,7 +356,6 @@ export default function AnalyticsPage() {
           <h2 className="text-[#5a5a5a] text-[10px] uppercase tracking-[0.2em] mb-4 px-1">Period Summary</h2>
           
           <div className="space-y-3">
-            {/* This Week */}
             <div className="bg-[#161616] rounded-2xl p-5 border border-[#222]">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-[#c9c9c9] font-medium text-sm">This Week</span>
@@ -237,10 +363,7 @@ export default function AnalyticsPage() {
               </div>
               <div className="flex items-end justify-between">
                 <div>
-                  <div 
-                    className="text-3xl font-light text-[#f0f0f0] tracking-tight"
-                    style={{ textShadow: '0 0 30px rgba(201, 162, 39, 0.08)' }}
-                  >
+                  <div className="text-3xl font-light text-[#f0f0f0] tracking-tight" style={{ textShadow: '0 0 30px rgba(201, 162, 39, 0.08)' }}>
                     {formatCurrency(summary.thisWeek.grossSales)}
                   </div>
                   <div className="text-[#5a5a5a] text-xs mt-1">{summary.thisWeek.transactionCount} customers</div>
@@ -252,9 +375,7 @@ export default function AnalyticsPage() {
               </div>
             </div>
 
-            {/* This Month */}
             <div className="relative overflow-hidden bg-gradient-to-br from-[#1a1816] to-[#161616] rounded-2xl p-5 border border-[#2a2520]">
-              {/* Subtle red accent */}
               <div className="absolute bottom-0 right-0 w-32 h-32 bg-gradient-to-tl from-[#8b2635]/5 to-transparent rounded-tl-full"></div>
               
               <div className="relative">
@@ -264,10 +385,7 @@ export default function AnalyticsPage() {
                 </div>
                 <div className="flex items-end justify-between">
                   <div>
-                    <div 
-                      className="text-3xl font-light text-[#f0f0f0] tracking-tight"
-                      style={{ textShadow: '0 0 40px rgba(201, 162, 39, 0.1)' }}
-                    >
+                    <div className="text-3xl font-light text-[#f0f0f0] tracking-tight" style={{ textShadow: '0 0 40px rgba(201, 162, 39, 0.1)' }}>
                       {formatCurrency(summary.thisMonth.grossSales)}
                     </div>
                     <div className="text-[#5a5a5a] text-xs mt-1">{summary.thisMonth.transactionCount} customers</div>
@@ -282,22 +400,18 @@ export default function AnalyticsPage() {
           </div>
         </section>
 
-        {/* Top Days */}
-        <section>
-          <h2 className="text-[#5a5a5a] text-[10px] uppercase tracking-[0.2em] mb-4 px-1">Busiest Days — 90 Days</h2>
+        {/* Top 5 Days */}
+        <section className="mb-10">
+          <h2 className="text-[#5a5a5a] text-[10px] uppercase tracking-[0.2em] mb-4 px-1">Top 5 Days — 90 Days</h2>
           
           {summary.topDays.length === 0 ? (
-            <div className="text-center py-16 text-[#4a4a4a] text-sm">
-              No data available
-            </div>
+            <div className="text-center py-12 text-[#4a4a4a] text-sm">No data available</div>
           ) : (
             <div className="bg-[#161616] rounded-2xl border border-[#222] overflow-hidden">
-              {summary.topDays.slice(0, 10).map((day, index) => (
+              {summary.topDays.slice(0, 5).map((day, index) => (
                 <div 
                   key={day.date}
-                  className={`flex items-center justify-between p-4 ${
-                    index !== summary.topDays.length - 1 && index !== 9 ? 'border-b border-[#1f1f1f]' : ''
-                  }`}
+                  className={`flex items-center justify-between p-4 ${index !== 4 ? 'border-b border-[#1f1f1f]' : ''}`}
                 >
                   <div className="flex items-center gap-4">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
@@ -324,6 +438,135 @@ export default function AnalyticsPage() {
               ))}
             </div>
           )}
+        </section>
+
+        {/* Top Customer */}
+        {topCustomer && (
+          <section className="mb-10">
+            <h2 className="text-[#5a5a5a] text-[10px] uppercase tracking-[0.2em] mb-4 px-1">Top Customer — 90 Days</h2>
+            
+            <button 
+              onClick={() => setSelectedCustomer(topCustomer)}
+              className="w-full bg-gradient-to-br from-[#1f1f1f] via-[#1a1a1a] to-[#161616] rounded-2xl p-5 border border-[#2a2a2a] text-left hover:border-[#c9a227]/30 transition-colors"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#c9a227]/20 to-[#8b7019]/10 flex items-center justify-center border border-[#c9a227]/20">
+                    <User size={20} className="text-[#c9a227]" />
+                  </div>
+                  <div>
+                    <p className="text-[#f0f0f0] font-medium">{topCustomer.name}</p>
+                    <p className="text-[#5a5a5a] text-xs">{topCustomer.visitCount} visits</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-[#c9a227] font-medium" style={{ textShadow: '0 0 20px rgba(201, 162, 39, 0.15)' }}>
+                    {formatCurrencyDetailed(topCustomer.totalSpent)}
+                  </p>
+                  <p className="text-[#4a4a4a] text-xs">tap for details</p>
+                </div>
+              </div>
+            </button>
+          </section>
+        )}
+
+        {/* Monthly Calendar */}
+        <section className="mb-10">
+          <div className="flex items-center justify-between mb-4 px-1">
+            <h2 className="text-[#5a5a5a] text-[10px] uppercase tracking-[0.2em]">Monthly Revenue</h2>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => navigateMonth('prev')}
+                className="p-1.5 text-[#6a6a6a] hover:text-[#c9a227] transition-colors"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <span className="text-[#8a8a8a] text-xs min-w-[100px] text-center">
+                {new Date(calendarYear, calendarMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              </span>
+              <button 
+                onClick={() => navigateMonth('next')}
+                className="p-1.5 text-[#6a6a6a] hover:text-[#c9a227] transition-colors"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-[#161616] rounded-2xl border border-[#222] p-4">
+            {/* Day headers */}
+            <div className="grid grid-cols-7 gap-1 mb-2">
+              {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
+                <div key={i} className="text-center text-[#4a4a4a] text-[10px] uppercase py-1">
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            {/* Calendar grid */}
+            <div className="grid grid-cols-7 gap-1">
+              {/* Empty cells for days before month starts */}
+              {Array.from({ length: getFirstDayOfMonth(calendarYear, calendarMonth) }).map((_, i) => (
+                <div key={`empty-${i}`} className="aspect-square"></div>
+              ))}
+              
+              {/* Days of the month */}
+              {Array.from({ length: getDaysInMonth(calendarYear, calendarMonth) }).map((_, i) => {
+                const day = i + 1
+                const dateStr = `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+                const dayData = calendarData?.calendar[day]
+                const rank = getTopDayRank(dateStr)
+                const hasRevenue = dayData && dayData.grossSales > 0
+                const isHighPerforming = dayData && dayData.grossSales >= 300
+                const isToday = new Date().getDate() === day && 
+                               new Date().getMonth() === calendarMonth && 
+                               new Date().getFullYear() === calendarYear
+
+                return (
+                  <div 
+                    key={day}
+                    className={`aspect-square rounded-lg p-1 flex flex-col items-center justify-center relative ${
+                      hasRevenue 
+                        ? isHighPerforming 
+                          ? 'bg-[#1a2f1a] border border-[#2a3f2a]' 
+                          : 'bg-[#1a1a1a] border border-[#252525]'
+                        : 'bg-transparent'
+                    } ${isToday ? 'ring-1 ring-[#c9a227]/50' : ''}`}
+                  >
+                    <span className={`text-[10px] ${hasRevenue ? 'text-[#8a8a8a]' : 'text-[#3a3a3a]'}`}>
+                      {day}
+                    </span>
+                    {hasRevenue && (
+                      <span className={`text-[8px] font-medium ${isHighPerforming ? 'text-[#5a9a5a]' : 'text-[#6a6a6a]'}`}>
+                        ${Math.round(dayData.grossSales)}
+                      </span>
+                    )}
+                    {rank && rank <= 10 && (
+                      <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#1a2f1a] border border-[#2a3f2a] text-[#5a9a5a] text-[8px] flex items-center justify-center font-medium">
+                        {rank}
+                      </span>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Legend */}
+            <div className="flex items-center justify-center gap-4 mt-4 pt-3 border-t border-[#222]">
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded bg-[#1a2f1a] border border-[#2a3f2a]"></div>
+                <span className="text-[#5a5a5a] text-[10px]">$300+</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded bg-[#1a1a1a] border border-[#252525]"></div>
+                <span className="text-[#5a5a5a] text-[10px]">Revenue</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded-full bg-[#1a2f1a] border border-[#2a3f2a] text-[#5a9a5a] text-[6px] flex items-center justify-center">#</div>
+                <span className="text-[#5a5a5a] text-[10px]">Top 10</span>
+              </div>
+            </div>
+          </div>
         </section>
 
         {/* Footer */}

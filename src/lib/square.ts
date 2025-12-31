@@ -24,6 +24,15 @@ export interface PaymentSummary {
   topDays: DailySales[]
 }
 
+export interface TopCustomer {
+  id: string
+  name: string
+  email?: string
+  phone?: string
+  totalSpent: number
+  visitCount: number
+}
+
 // Helper to convert BigInt to number safely
 function bigIntToNumber(value: bigint | number | undefined): number {
   if (value === undefined) return 0
@@ -135,15 +144,143 @@ export async function getDailyBreakdown(days: number): Promise<DailySales[]> {
   return results
 }
 
-// Get top 10 busiest days in the last 90 days
-export async function getTopBusiestDays(): Promise<DailySales[]> {
+// Get top busiest days in the last 90 days
+export async function getTopBusiestDays(limit: number = 10): Promise<DailySales[]> {
   const dailyData = await getDailyBreakdown(90)
   
-  // Sort by transaction count descending
+  // Sort by gross sales descending (highest earning days)
   return dailyData
-    .filter(d => d.transactionCount > 0)
-    .sort((a, b) => b.transactionCount - a.transactionCount)
-    .slice(0, 10)
+    .filter(d => d.grossSales > 0)
+    .sort((a, b) => b.grossSales - a.grossSales)
+    .slice(0, limit)
+}
+
+// Get monthly calendar data for a specific month
+export async function getMonthlyCalendar(year: number, month: number): Promise<{ [day: number]: DailySales }> {
+  const startDate = new Date(year, month, 1)
+  const endDate = new Date(year, month + 1, 0) // Last day of month
+  
+  const payments = await getPayments(startDate, endDate)
+  
+  // Group payments by day
+  const dailyData: { [day: number]: { grossSales: number; tips: number; count: number } } = {}
+  
+  for (const payment of payments) {
+    if (payment.status === 'COMPLETED' && payment.createdAt) {
+      const paymentDate = new Date(payment.createdAt)
+      const day = paymentDate.getDate()
+      
+      if (!dailyData[day]) {
+        dailyData[day] = { grossSales: 0, tips: 0, count: 0 }
+      }
+      
+      dailyData[day].grossSales += bigIntToNumber(payment.totalMoney?.amount)
+      dailyData[day].tips += bigIntToNumber(payment.tipMoney?.amount)
+      dailyData[day].count++
+    }
+  }
+  
+  // Convert to DailySales format
+  const result: { [day: number]: DailySales } = {}
+  for (const [day, data] of Object.entries(dailyData)) {
+    const dayNum = parseInt(day)
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`
+    result[dayNum] = {
+      date: dateStr,
+      grossSales: data.grossSales,
+      netSales: data.grossSales - data.tips,
+      tips: data.tips,
+      transactionCount: data.count,
+    }
+  }
+  
+  return result
+}
+
+// Get top customers by spending in the last N days
+export async function getTopCustomers(days: number = 90, limit: number = 10): Promise<TopCustomer[]> {
+  const startDate = new Date()
+  startDate.setDate(startDate.getDate() - days)
+  const endDate = new Date()
+  
+  const payments = await getPayments(startDate, endDate)
+  
+  // Aggregate spending by customer ID
+  const customerSpending: { [customerId: string]: { total: number; visits: number } } = {}
+  
+  for (const payment of payments) {
+    if (payment.status === 'COMPLETED' && payment.customerId) {
+      if (!customerSpending[payment.customerId]) {
+        customerSpending[payment.customerId] = { total: 0, visits: 0 }
+      }
+      customerSpending[payment.customerId].total += bigIntToNumber(payment.totalMoney?.amount)
+      customerSpending[payment.customerId].visits++
+    }
+  }
+  
+  // Sort by total spending
+  const sortedCustomers = Object.entries(customerSpending)
+    .sort(([, a], [, b]) => b.total - a.total)
+    .slice(0, limit)
+  
+  // Fetch customer details
+  const topCustomers: TopCustomer[] = []
+  
+  for (const [customerId, spending] of sortedCustomers) {
+    try {
+      const customer = await squareClient.customers.get({ customerId })
+      
+      const givenName = customer.givenName || ''
+      const familyName = customer.familyName || ''
+      const name = `${givenName} ${familyName}`.trim() || 'Unknown Customer'
+      
+      topCustomers.push({
+        id: customerId,
+        name,
+        email: customer.emailAddress,
+        phone: customer.phoneNumber,
+        totalSpent: spending.total,
+        visitCount: spending.visits,
+      })
+    } catch (error) {
+      // Customer might have been deleted
+      topCustomers.push({
+        id: customerId,
+        name: 'Unknown Customer',
+        totalSpent: spending.total,
+        visitCount: spending.visits,
+      })
+    }
+  }
+  
+  return topCustomers
+}
+
+// Get a single customer's all-time spending
+export async function getCustomerAllTimeSpending(customerId: string): Promise<{ totalSpent: number; visitCount: number }> {
+  try {
+    // Get payments for the last 2 years (max reasonable range)
+    const startDate = new Date()
+    startDate.setFullYear(startDate.getFullYear() - 2)
+    const endDate = new Date()
+    
+    const payments = await getPayments(startDate, endDate)
+    
+    let totalSpent = 0
+    let visitCount = 0
+    
+    for (const payment of payments) {
+      if (payment.status === 'COMPLETED' && payment.customerId === customerId) {
+        totalSpent += bigIntToNumber(payment.totalMoney?.amount)
+        visitCount++
+      }
+    }
+    
+    return { totalSpent, visitCount }
+  } catch (error) {
+    console.error('Error fetching customer spending:', error)
+    return { totalSpent: 0, visitCount: 0 }
+  }
 }
 
 // Get full payment summary
@@ -153,7 +290,7 @@ export async function getPaymentSummary(): Promise<PaymentSummary> {
     getYesterdaySales(),
     getThisWeekSales(),
     getThisMonthSales(),
-    getTopBusiestDays(),
+    getTopBusiestDays(10),
   ])
 
   return {
