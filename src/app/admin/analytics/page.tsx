@@ -8,8 +8,6 @@ import {
   RefreshCw,
   TrendingUp,
   TrendingDown,
-  ChevronLeft,
-  ChevronRight,
   X,
   Phone,
   Mail,
@@ -41,21 +39,13 @@ interface TopCustomer {
   visitCount: number
 }
 
-interface CalendarData {
-  calendar: { [day: number]: DailySales }
-  topDays: DailySales[]
-}
-
 export default function AnalyticsPage() {
   const [summary, setSummary] = useState<PaymentSummary | null>(null)
   const [customers, setCustomers] = useState<TopCustomer[]>([])
-  const [calendarData, setCalendarData] = useState<CalendarData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [selectedCustomer, setSelectedCustomer] = useState<TopCustomer | null>(null)
-  const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth())
-  const [calendarYear, setCalendarYear] = useState(new Date().getFullYear())
   const router = useRouter()
   const supabase = createClient()
 
@@ -88,18 +78,6 @@ export default function AnalyticsPage() {
     }
   }, [])
 
-  const fetchCalendar = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/square/calendar?year=${calendarYear}&month=${calendarMonth}`)
-      if (res.ok) {
-        const data = await res.json()
-        setCalendarData(data)
-      }
-    } catch (err) {
-      console.error('Error fetching calendar:', err)
-    }
-  }, [calendarYear, calendarMonth])
-
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser()
@@ -111,12 +89,6 @@ export default function AnalyticsPage() {
     }
     checkAuth()
   }, [supabase, router, fetchAnalytics])
-
-  useEffect(() => {
-    if (!loading && !error) {
-      fetchCalendar()
-    }
-  }, [calendarMonth, calendarYear, loading, error, fetchCalendar])
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -147,37 +119,10 @@ export default function AnalyticsPage() {
     return ((current - previous) / previous) * 100
   }
 
-  const getDaysInMonth = (year: number, month: number) => {
-    return new Date(year, month + 1, 0).getDate()
-  }
-
-  const getFirstDayOfMonth = (year: number, month: number) => {
-    return new Date(year, month, 1).getDay()
-  }
-
-  const getTopDayRank = (dateStr: string): number | null => {
-    if (!calendarData?.topDays) return null
-    const index = calendarData.topDays.findIndex(d => d.date === dateStr)
-    return index >= 0 ? index + 1 : null
-  }
-
-  const navigateMonth = (direction: 'prev' | 'next') => {
-    if (direction === 'prev') {
-      if (calendarMonth === 0) {
-        setCalendarMonth(11)
-        setCalendarYear(calendarYear - 1)
-      } else {
-        setCalendarMonth(calendarMonth - 1)
-      }
-    } else {
-      if (calendarMonth === 11) {
-        setCalendarMonth(0)
-        setCalendarYear(calendarYear + 1)
-      } else {
-        setCalendarMonth(calendarMonth + 1)
-      }
-    }
-  }
+  // Filter customers to only show those with real names (not "Unknown Customer")
+  const namedCustomers = customers.filter(c => 
+    c.name && c.name !== 'Unknown Customer' && c.name.trim() !== ''
+  ).slice(0, 5)
 
   if (loading) {
     return (
@@ -213,8 +158,6 @@ export default function AnalyticsPage() {
   if (!summary) return null
 
   const salesChange = getPercentChange(summary.today.grossSales, summary.yesterday.grossSales)
-  const transactionChange = getPercentChange(summary.today.transactionCount, summary.yesterday.transactionCount)
-  const topCustomer = customers[0]
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1a1a1a] to-[#0d0d0d]">
@@ -411,7 +354,7 @@ export default function AnalyticsPage() {
               {summary.topDays.slice(0, 5).map((day, index) => (
                 <div 
                   key={day.date}
-                  className={`flex items-center justify-between p-4 ${index !== 4 ? 'border-b border-[#1f1f1f]' : ''}`}
+                  className={`flex items-center justify-between p-4 ${index !== 4 && index !== summary.topDays.slice(0, 5).length - 1 ? 'border-b border-[#1f1f1f]' : ''}`}
                 >
                   <div className="flex items-center gap-4">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
@@ -440,134 +383,46 @@ export default function AnalyticsPage() {
           )}
         </section>
 
-        {/* Top Customer */}
-        {topCustomer && (
+        {/* Top 5 Customers */}
+        {namedCustomers.length > 0 && (
           <section className="mb-10">
-            <h2 className="text-[#5a5a5a] text-[10px] uppercase tracking-[0.2em] mb-4 px-1">Top Customer — 90 Days</h2>
+            <h2 className="text-[#5a5a5a] text-[10px] uppercase tracking-[0.2em] mb-4 px-1">Top Customers — 90 Days</h2>
             
-            <button 
-              onClick={() => setSelectedCustomer(topCustomer)}
-              className="w-full bg-gradient-to-br from-[#1f1f1f] via-[#1a1a1a] to-[#161616] rounded-2xl p-5 border border-[#2a2a2a] text-left hover:border-[#c9a227]/30 transition-colors"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#c9a227]/20 to-[#8b7019]/10 flex items-center justify-center border border-[#c9a227]/20">
-                    <User size={20} className="text-[#c9a227]" />
+            <div className="bg-[#161616] rounded-2xl border border-[#222] overflow-hidden">
+              {namedCustomers.map((customer, index) => (
+                <button 
+                  key={customer.id}
+                  onClick={() => setSelectedCustomer(customer)}
+                  className={`w-full flex items-center justify-between p-4 text-left hover:bg-[#1a1a1a] transition-colors ${
+                    index !== namedCustomers.length - 1 ? 'border-b border-[#1f1f1f]' : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
+                      index === 0 
+                        ? 'bg-gradient-to-br from-[#c9a227]/20 to-[#8b7019]/10 text-[#c9a227] border border-[#c9a227]/20' 
+                        : index === 1 
+                        ? 'bg-gradient-to-br from-[#888]/15 to-[#666]/10 text-[#999] border border-[#666]/20'
+                        : index === 2 
+                        ? 'bg-gradient-to-br from-[#8b2635]/20 to-[#5c1a23]/10 text-[#c46b6b] border border-[#8b2635]/20'
+                        : 'bg-[#1a1a1a] text-[#4a4a4a] border border-[#252525]'
+                    }`}>
+                      {index + 1}
+                    </div>
+                    <div>
+                      <div className="text-[#d0d0d0] text-sm">{customer.name}</div>
+                      <div className="text-[#4a4a4a] text-xs">{customer.visitCount} visits</div>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-[#f0f0f0] font-medium">{topCustomer.name}</p>
-                    <p className="text-[#5a5a5a] text-xs">{topCustomer.visitCount} visits</p>
+                  <div className="text-right">
+                    <div className="text-[#c9a227] font-medium text-sm">{formatCurrencyDetailed(customer.totalSpent)}</div>
+                    <div className="text-[#4a4a4a] text-xs">tap for details</div>
                   </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-[#c9a227] font-medium" style={{ textShadow: '0 0 20px rgba(201, 162, 39, 0.15)' }}>
-                    {formatCurrencyDetailed(topCustomer.totalSpent)}
-                  </p>
-                  <p className="text-[#4a4a4a] text-xs">tap for details</p>
-                </div>
-              </div>
-            </button>
+                </button>
+              ))}
+            </div>
           </section>
         )}
-
-        {/* Monthly Calendar */}
-        <section className="mb-10">
-          <div className="flex items-center justify-between mb-4 px-1">
-            <h2 className="text-[#5a5a5a] text-[10px] uppercase tracking-[0.2em]">Monthly Revenue</h2>
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => navigateMonth('prev')}
-                className="p-1.5 text-[#6a6a6a] hover:text-[#c9a227] transition-colors"
-              >
-                <ChevronLeft size={16} />
-              </button>
-              <span className="text-[#8a8a8a] text-xs min-w-[100px] text-center">
-                {new Date(calendarYear, calendarMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-              </span>
-              <button 
-                onClick={() => navigateMonth('next')}
-                className="p-1.5 text-[#6a6a6a] hover:text-[#c9a227] transition-colors"
-              >
-                <ChevronRight size={16} />
-              </button>
-            </div>
-          </div>
-
-          <div className="bg-[#161616] rounded-2xl border border-[#222] p-4">
-            {/* Day headers */}
-            <div className="grid grid-cols-7 gap-1 mb-2">
-              {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
-                <div key={i} className="text-center text-[#4a4a4a] text-[10px] uppercase py-1">
-                  {day}
-                </div>
-              ))}
-            </div>
-
-            {/* Calendar grid */}
-            <div className="grid grid-cols-7 gap-1">
-              {/* Empty cells for days before month starts */}
-              {Array.from({ length: getFirstDayOfMonth(calendarYear, calendarMonth) }).map((_, i) => (
-                <div key={`empty-${i}`} className="aspect-square"></div>
-              ))}
-              
-              {/* Days of the month */}
-              {Array.from({ length: getDaysInMonth(calendarYear, calendarMonth) }).map((_, i) => {
-                const day = i + 1
-                const dateStr = `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-                const dayData = calendarData?.calendar[day]
-                const rank = getTopDayRank(dateStr)
-                const hasRevenue = dayData && dayData.grossSales > 0
-                const isHighPerforming = dayData && dayData.grossSales >= 300
-                const isToday = new Date().getDate() === day && 
-                               new Date().getMonth() === calendarMonth && 
-                               new Date().getFullYear() === calendarYear
-
-                return (
-                  <div 
-                    key={day}
-                    className={`aspect-square rounded-lg p-1 flex flex-col items-center justify-center relative ${
-                      hasRevenue 
-                        ? isHighPerforming 
-                          ? 'bg-[#1a2f1a] border border-[#2a3f2a]' 
-                          : 'bg-[#1a1a1a] border border-[#252525]'
-                        : 'bg-transparent'
-                    } ${isToday ? 'ring-1 ring-[#c9a227]/50' : ''}`}
-                  >
-                    <span className={`text-[10px] ${hasRevenue ? 'text-[#8a8a8a]' : 'text-[#3a3a3a]'}`}>
-                      {day}
-                    </span>
-                    {hasRevenue && (
-                      <span className={`text-[8px] font-medium ${isHighPerforming ? 'text-[#5a9a5a]' : 'text-[#6a6a6a]'}`}>
-                        ${Math.round(dayData.grossSales)}
-                      </span>
-                    )}
-                    {rank && rank <= 10 && (
-                      <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#1a2f1a] border border-[#2a3f2a] text-[#5a9a5a] text-[8px] flex items-center justify-center font-medium">
-                        {rank}
-                      </span>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-
-            {/* Legend */}
-            <div className="flex items-center justify-center gap-4 mt-4 pt-3 border-t border-[#222]">
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded bg-[#1a2f1a] border border-[#2a3f2a]"></div>
-                <span className="text-[#5a5a5a] text-[10px]">$300+</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded bg-[#1a1a1a] border border-[#252525]"></div>
-                <span className="text-[#5a5a5a] text-[10px]">Revenue</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-[#1a2f1a] border border-[#2a3f2a] text-[#5a9a5a] text-[6px] flex items-center justify-center">#</div>
-                <span className="text-[#5a5a5a] text-[10px]">Top 10</span>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* Footer */}
         {lastUpdated && (
