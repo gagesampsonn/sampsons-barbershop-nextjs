@@ -7,8 +7,7 @@ import {
   ArrowLeft,
   RefreshCw,
   TrendingUp,
-  TrendingDown,
-  ChevronRight
+  TrendingDown
 } from 'lucide-react'
 
 interface DailySales {
@@ -85,14 +84,7 @@ export default function AnalyticsPage() {
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', {
-      weekday: 'long',
-      month: 'short',
-      day: 'numeric',
-    })
-  }
-
-  const formatShortDate = (dateStr: string) => {
-    return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', {
+      weekday: 'short',
       month: 'short',
       day: 'numeric',
     })
@@ -105,10 +97,10 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white/50 text-sm">Loading analytics...</p>
+          <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-3"></div>
+          <p className="text-white/40 text-sm">Loading...</p>
         </div>
       </div>
     )
@@ -116,16 +108,16 @@ export default function AnalyticsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
-        <div className="text-center max-w-sm">
+      <div className="min-h-screen bg-black flex items-center justify-center p-6">
+        <div className="text-center">
           <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
             <span className="text-red-400 text-xl">!</span>
           </div>
           <h2 className="text-white font-medium mb-2">Unable to Load</h2>
-          <p className="text-white/50 text-sm mb-6">{error}</p>
+          <p className="text-white/40 text-sm mb-6">{error}</p>
           <button 
             onClick={() => router.push('/admin')}
-            className="text-sm text-white/70 hover:text-white transition-colors"
+            className="text-sm text-white/60 active:text-white py-2 px-4"
           >
             ← Back to Admin
           </button>
@@ -138,171 +130,114 @@ export default function AnalyticsPage() {
 
   const salesChange = getPercentChange(summary.today.grossSales, summary.yesterday.grossSales)
   const transactionChange = getPercentChange(summary.today.transactionCount, summary.yesterday.transactionCount)
-  const avgTransaction = summary.today.transactionCount > 0 
-    ? summary.today.grossSales / summary.today.transactionCount 
-    : 0
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
-      {/* Navigation */}
-      <nav className="border-b border-white/5">
-        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+    <div className="min-h-screen bg-black">
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-10 bg-black/90 backdrop-blur-lg border-b border-white/5">
+        <div className="flex items-center justify-between px-4 h-14">
           <button 
             onClick={() => router.push('/admin')}
-            className="flex items-center gap-2 text-white/50 hover:text-white transition-colors text-sm"
+            className="flex items-center gap-2 text-white/60 active:text-white p-2 -ml-2"
           >
-            <ArrowLeft size={16} />
-            <span>Admin</span>
+            <ArrowLeft size={20} />
           </button>
+          <span className="text-white font-medium">Analytics</span>
           <button 
             onClick={fetchAnalytics}
             disabled={loading}
-            className="flex items-center gap-2 text-white/50 hover:text-white transition-colors text-sm"
+            className="p-2 -mr-2 text-white/60 active:text-white"
           >
-            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-            <span className="hidden sm:inline">
-              {lastUpdated ? lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Refresh'}
-            </span>
+            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
           </button>
         </div>
-      </nav>
+      </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-12">
-        {/* Header */}
-        <header className="mb-12">
-          <h1 className="text-3xl font-light text-white tracking-tight mb-1">Analytics</h1>
-          <p className="text-white/40 text-sm">Square payment data overview</p>
-        </header>
-
-        {/* Today's Overview - Large Cards */}
-        <section className="mb-16">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Revenue */}
-            <div className="col-span-2 bg-gradient-to-br from-white/[0.03] to-transparent border border-white/5 rounded-2xl p-6">
-              <div className="flex items-start justify-between mb-6">
-                <span className="text-white/40 text-xs uppercase tracking-widest">Today&apos;s Revenue</span>
-                <div className={`flex items-center gap-1 text-xs ${salesChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {salesChange >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                  {Math.abs(salesChange).toFixed(0)}%
-                </div>
-              </div>
-              <div className="text-5xl font-light text-white tracking-tight mb-2">
-                {formatCurrency(summary.today.grossSales)}
-              </div>
-              <div className="text-white/30 text-sm">
-                Yesterday: {formatCurrencyDetailed(summary.yesterday.grossSales)}
-              </div>
+      <main className="px-4 py-6 pb-20">
+        {/* Today Hero */}
+        <section className="mb-8">
+          <div className="text-center mb-6">
+            <p className="text-white/40 text-xs uppercase tracking-wider mb-2">Today</p>
+            <div className="text-5xl font-light text-white tracking-tight">
+              {formatCurrency(summary.today.grossSales)}
             </div>
-
-            {/* Transactions */}
-            <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6">
-              <span className="text-white/40 text-xs uppercase tracking-widest">Transactions</span>
-              <div className="mt-6">
-                <div className="text-4xl font-light text-white tracking-tight">
-                  {summary.today.transactionCount}
-                </div>
-                <div className={`flex items-center gap-1 mt-2 text-xs ${transactionChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {transactionChange >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                  {Math.abs(transactionChange).toFixed(0)}% vs yesterday
-                </div>
-              </div>
-            </div>
-
-            {/* Tips */}
-            <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6">
-              <span className="text-white/40 text-xs uppercase tracking-widest">Tips</span>
-              <div className="mt-6">
-                <div className="text-4xl font-light text-emerald-400 tracking-tight">
-                  {formatCurrency(summary.today.tips)}
-                </div>
-                <div className="text-white/30 text-xs mt-2">
-                  {summary.today.grossSales > 0 
-                    ? `${((summary.today.tips / summary.today.grossSales) * 100).toFixed(1)}% of sales`
-                    : '—'}
-                </div>
-              </div>
+            <div className={`inline-flex items-center gap-1 mt-2 px-2 py-1 rounded-full text-xs ${
+              salesChange >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
+            }`}>
+              {salesChange >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+              {Math.abs(salesChange).toFixed(0)}% vs yesterday
             </div>
           </div>
 
-          {/* Average ticket - small inline stat */}
-          <div className="mt-4 flex items-center gap-6 text-sm">
-            <div className="flex items-center gap-2">
-              <span className="text-white/40">Avg ticket:</span>
-              <span className="text-white font-medium">{formatCurrencyDetailed(avgTransaction)}</span>
+          {/* Today's Quick Stats */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-white/[0.03] rounded-2xl p-4 text-center">
+              <div className="text-2xl font-light text-white">{summary.today.transactionCount}</div>
+              <div className="text-white/30 text-xs mt-1">customers</div>
+            </div>
+            <div className="bg-white/[0.03] rounded-2xl p-4 text-center">
+              <div className="text-2xl font-light text-emerald-400">{formatCurrency(summary.today.tips)}</div>
+              <div className="text-white/30 text-xs mt-1">tips</div>
+            </div>
+            <div className="bg-white/[0.03] rounded-2xl p-4 text-center">
+              <div className="text-2xl font-light text-white">
+                {summary.today.transactionCount > 0 
+                  ? formatCurrency(summary.today.grossSales / summary.today.transactionCount)
+                  : '$0'}
+              </div>
+              <div className="text-white/30 text-xs mt-1">avg ticket</div>
             </div>
           </div>
         </section>
 
-        {/* Period Stats */}
-        <section className="mb-16">
-          <h2 className="text-xs uppercase tracking-widest text-white/40 mb-6">Period Summary</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/5 rounded-2xl overflow-hidden">
-            {/* This Week */}
-            <div className="bg-[#0a0a0a] p-6">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-white/60 text-sm">This Week</span>
-                <span className="text-white/30 text-xs">Sun – Today</span>
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <div className="text-2xl font-light text-white">{formatCurrency(summary.thisWeek.grossSales)}</div>
-                  <div className="text-white/30 text-xs mt-1">revenue</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-light text-white">{summary.thisWeek.transactionCount}</div>
-                  <div className="text-white/30 text-xs mt-1">customers</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-light text-emerald-400">{formatCurrency(summary.thisWeek.tips)}</div>
-                  <div className="text-white/30 text-xs mt-1">tips</div>
-                </div>
-              </div>
+        {/* Period Cards */}
+        <section className="mb-8 space-y-3">
+          {/* This Week */}
+          <div className="bg-white/[0.03] rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-white font-medium">This Week</span>
+              <span className="text-white/30 text-xs">Sun – Today</span>
             </div>
+            <div className="flex items-baseline gap-4">
+              <div className="text-3xl font-light text-white">{formatCurrency(summary.thisWeek.grossSales)}</div>
+              <div className="text-white/40 text-sm">{summary.thisWeek.transactionCount} customers</div>
+            </div>
+            <div className="text-emerald-400/70 text-sm mt-1">+{formatCurrencyDetailed(summary.thisWeek.tips)} tips</div>
+          </div>
 
-            {/* This Month */}
-            <div className="bg-[#0a0a0a] p-6">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-white/60 text-sm">This Month</span>
-                <span className="text-white/30 text-xs">{new Date().toLocaleDateString('en-US', { month: 'long' })}</span>
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <div className="text-2xl font-light text-white">{formatCurrency(summary.thisMonth.grossSales)}</div>
-                  <div className="text-white/30 text-xs mt-1">revenue</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-light text-white">{summary.thisMonth.transactionCount}</div>
-                  <div className="text-white/30 text-xs mt-1">customers</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-light text-emerald-400">{formatCurrency(summary.thisMonth.tips)}</div>
-                  <div className="text-white/30 text-xs mt-1">tips</div>
-                </div>
-              </div>
+          {/* This Month */}
+          <div className="bg-white/[0.03] rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-white font-medium">This Month</span>
+              <span className="text-white/30 text-xs">{new Date().toLocaleDateString('en-US', { month: 'long' })}</span>
             </div>
+            <div className="flex items-baseline gap-4">
+              <div className="text-3xl font-light text-white">{formatCurrency(summary.thisMonth.grossSales)}</div>
+              <div className="text-white/40 text-sm">{summary.thisMonth.transactionCount} customers</div>
+            </div>
+            <div className="text-emerald-400/70 text-sm mt-1">+{formatCurrencyDetailed(summary.thisMonth.tips)} tips</div>
           </div>
         </section>
 
         {/* Top Days */}
         <section>
-          <h2 className="text-xs uppercase tracking-widest text-white/40 mb-6">Busiest Days — Last 90 Days</h2>
+          <h2 className="text-white/40 text-xs uppercase tracking-wider mb-4">Top Days — 90 Days</h2>
           
           {summary.topDays.length === 0 ? (
-            <div className="text-center py-16 text-white/30">
-              No transaction data available
+            <div className="text-center py-12 text-white/30 text-sm">
+              No data yet
             </div>
           ) : (
-            <div className="space-y-1">
+            <div className="space-y-2">
               {summary.topDays.slice(0, 10).map((day, index) => (
                 <div 
                   key={day.date}
-                  className="group flex items-center justify-between p-4 rounded-xl hover:bg-white/[0.02] transition-colors"
+                  className="flex items-center justify-between py-3 border-b border-white/5 last:border-0"
                 >
-                  <div className="flex items-center gap-5">
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${
+                  <div className="flex items-center gap-4">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                       index === 0 ? 'bg-amber-500/20 text-amber-400' :
-                      index === 1 ? 'bg-white/10 text-white/60' :
+                      index === 1 ? 'bg-zinc-500/20 text-zinc-300' :
                       index === 2 ? 'bg-orange-500/20 text-orange-400' :
                       'bg-white/5 text-white/30'
                     }`}>
@@ -313,18 +248,22 @@ export default function AnalyticsPage() {
                       <div className="text-white/30 text-xs">{day.transactionCount} customers</div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-6">
-                    <div className="text-right">
-                      <div className="text-white text-sm font-medium">{formatCurrencyDetailed(day.grossSales)}</div>
-                      <div className="text-emerald-400/70 text-xs">+{formatCurrencyDetailed(day.tips)} tips</div>
-                    </div>
-                    <ChevronRight size={16} className="text-white/10 group-hover:text-white/30 transition-colors" />
+                  <div className="text-right">
+                    <div className="text-white font-medium">{formatCurrencyDetailed(day.grossSales)}</div>
+                    <div className="text-emerald-400/60 text-xs">+{formatCurrencyDetailed(day.tips)}</div>
                   </div>
                 </div>
               ))}
             </div>
           )}
         </section>
+
+        {/* Last Updated */}
+        {lastUpdated && (
+          <div className="text-center mt-8 text-white/20 text-xs">
+            Updated {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </div>
+        )}
       </main>
     </div>
   )
