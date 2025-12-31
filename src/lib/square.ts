@@ -228,23 +228,25 @@ export async function getTopCustomers(days: number = 90, limit: number = 10): Pr
   
   for (const [customerId, spending] of sortedCustomers) {
     try {
-      const response = await squareClient.customers.get({ customerId })
-      const customer = response as any
+      const response = await squareClient.customers.get({ customerId }) as any
       
-      const givenName = customer.givenName || ''
-      const familyName = customer.familyName || ''
+      // The response might have customer data at different levels
+      const customer = response.customer || response
+      
+      const givenName = customer.givenName || customer.given_name || ''
+      const familyName = customer.familyName || customer.family_name || ''
       const name = `${givenName} ${familyName}`.trim() || 'Unknown Customer'
       
       topCustomers.push({
         id: customerId,
         name,
-        email: customer.emailAddress,
-        phone: customer.phoneNumber,
+        email: customer.emailAddress || customer.email_address,
+        phone: customer.phoneNumber || customer.phone_number,
         totalSpent: spending.total,
         visitCount: spending.visits,
       })
     } catch (error) {
-      // Customer might have been deleted
+      // Customer might have been deleted or no profile
       topCustomers.push({
         id: customerId,
         name: 'Unknown Customer',
