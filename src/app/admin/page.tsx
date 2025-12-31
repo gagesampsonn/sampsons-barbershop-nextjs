@@ -392,9 +392,13 @@ export default function AdminPage() {
               <p className="text-xs text-[var(--text-muted)]">{userEmail}</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <a href="/admin/analytics" className="text-sm text-[var(--accent-blue)] hover:text-[var(--text-primary)] transition-colors font-medium">
-              📊 Analytics
+          <div className="flex items-center gap-3">
+            <a 
+              href="/admin/analytics" 
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-[#c9a227] to-[#a8861d] text-black font-medium text-sm hover:from-[#d4af37] hover:to-[#b8962d] transition-all shadow-lg shadow-[#c9a227]/20"
+            >
+              <DollarSign size={16} />
+              Square Data
             </a>
             <a href="/" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
               View Site
@@ -408,6 +412,29 @@ export default function AdminPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-8 space-y-8">
+        {/* Square Data Card */}
+        <a 
+          href="/admin/analytics"
+          className="block admin-card group hover:border-[#c9a227]/30 transition-all cursor-pointer"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#c9a227] to-[#8b7019] flex items-center justify-center shadow-lg shadow-[#c9a227]/20">
+                <DollarSign size={28} className="text-black" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-[var(--text-primary)] group-hover:text-[#c9a227] transition-colors">Square Data</h2>
+                <p className="text-sm text-[var(--text-muted)]">View sales, top customers & calendar</p>
+              </div>
+            </div>
+            <div className="text-[var(--text-muted)] group-hover:text-[#c9a227] transition-colors">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </div>
+          </div>
+        </a>
+
         {/* Weekly Hours Section */}
         <section className="admin-card">
           <div className="flex items-center justify-between mb-6">
