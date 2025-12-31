@@ -1,4 +1,4 @@
-import { Scissors, MapPin, Phone, Star, Clock, Navigation, User, UserCheck, Users } from 'lucide-react'
+import { Scissors, MapPin, Phone, Star, Clock, Navigation, User, UserCheck, Users, AlertTriangle, Calendar } from 'lucide-react'
 import Image from 'next/image'
 import { getWeeklyHours, getUpcomingExceptions, isCurrentlyOpen, formatHoursForDay } from '@/lib/hours'
 import { DAY_NAMES, formatTimeForDisplay } from '@/lib/types'
@@ -11,8 +11,59 @@ export default async function HomePage() {
   const exceptions = await getUpcomingExceptions()
   const isOpen = isCurrentlyOpen(weeklyHours, exceptions)
 
+  // Get the soonest upcoming exception to feature in the banner
+  const nextException = exceptions.length > 0 ? exceptions[0] : null
+  
+  // Format the exception date for display
+  const formatExceptionDate = (dateStr: string) => {
+    const date = new Date(dateStr + 'T00:00:00')
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    
+    if (date.getTime() === today.getTime()) {
+      return 'Today'
+    } else if (date.getTime() === tomorrow.getTime()) {
+      return 'Tomorrow'
+    } else {
+      return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Holiday/Exception Alert Banner */}
+      {nextException && (
+        <div className={`relative z-50 ${nextException.type === 'closed' ? 'bg-gradient-to-r from-[var(--accent-red)] to-[#c41e3a]' : 'bg-gradient-to-r from-[var(--accent-blue)] to-[#1e5c8a]'}`}>
+          <div className="max-w-7xl mx-auto px-4 py-3">
+            <div className="flex items-center justify-center gap-3 text-white">
+              {nextException.type === 'closed' ? (
+                <AlertTriangle size={18} className="flex-shrink-0 animate-pulse" />
+              ) : (
+                <Calendar size={18} className="flex-shrink-0" />
+              )}
+              <p className="text-sm md:text-base font-medium text-center font-sans">
+                <span className="font-bold">{nextException.label}</span>
+                <span className="mx-2">•</span>
+                <span>{formatExceptionDate(nextException.date)}</span>
+                <span className="mx-2">•</span>
+                {nextException.type === 'closed' ? (
+                  <span className="font-semibold">We&apos;ll be closed</span>
+                ) : (
+                  <span>
+                    Special hours: {formatTimeForDisplay(nextException.open_time)} - {formatTimeForDisplay(nextException.close_time)}
+                  </span>
+                )}
+              </p>
+              <a href="#hours" className="hidden sm:inline-flex items-center gap-1 px-3 py-1 bg-white/20 hover:bg-white/30 rounded-full text-xs font-medium transition-colors">
+                View Hours
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Navigation */}
       <nav className="sticky top-0 z-50 w-full bg-[var(--barber-bg)]/95 backdrop-blur-md border-b border-[var(--barber-border)]">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
