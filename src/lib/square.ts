@@ -1,11 +1,11 @@
-import { Client, Environment } from 'square'
+import { SquareClient, SquareEnvironment } from 'square'
 
 // Initialize Square client
-const squareClient = new Client({
-  accessToken: process.env.SQUARE_ACCESS_TOKEN,
+const squareClient = new SquareClient({
+  token: process.env.SQUARE_ACCESS_TOKEN,
   environment: process.env.SQUARE_ENVIRONMENT === 'sandbox' 
-    ? Environment.Sandbox 
-    : Environment.Production,
+    ? SquareEnvironment.Sandbox 
+    : SquareEnvironment.Production,
 })
 
 export interface DailySales {
@@ -25,7 +25,7 @@ export interface PaymentSummary {
 }
 
 // Helper to convert BigInt to number safely
-function bigIntToNumber(value: bigint | undefined): number {
+function bigIntToNumber(value: bigint | number | undefined): number {
   if (value === undefined) return 0
   return Number(value) / 100 // Square amounts are in cents
 }
@@ -47,18 +47,21 @@ function getEndOfDay(date: Date): string {
 // Fetch payments for a date range
 export async function getPayments(startDate: Date, endDate: Date) {
   try {
-    const { result } = await squareClient.paymentsApi.listPayments(
-      getStartOfDay(startDate),
-      getEndOfDay(endDate),
-      undefined, // sortOrder
-      undefined, // cursor
-      undefined, // locationId
-      undefined, // total
-      undefined, // last4
-      undefined, // cardBrand
-      100 // limit
-    )
-    return result.payments || []
+    const allPayments: any[] = []
+    
+    // Get the async iterator and iterate through pages
+    const paymentsIterator = await squareClient.payments.list({
+      beginTime: getStartOfDay(startDate),
+      endTime: getEndOfDay(endDate),
+      limit: 100,
+    })
+    
+    // Collect all payments from the paginated response
+    for await (const payment of paymentsIterator) {
+      allPayments.push(payment)
+    }
+    
+    return allPayments
   } catch (error) {
     console.error('Error fetching Square payments:', error)
     return []
@@ -188,4 +191,3 @@ export async function getHourlyBreakdown(date: Date): Promise<{ hour: number; co
     amount: data.amount,
   }))
 }
-
