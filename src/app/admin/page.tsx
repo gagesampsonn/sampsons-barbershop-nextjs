@@ -393,6 +393,9 @@ export default function AdminPage() {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            <a href="/admin/analytics" className="text-sm text-[var(--accent-blue)] hover:text-[var(--text-primary)] transition-colors font-medium">
+              📊 Analytics
+            </a>
             <a href="/" className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
               View Site
             </a>
