@@ -299,7 +299,11 @@ export default function AdminPage() {
         updated_at: new Date().toISOString()
       }
 
-      if (editingService) {
+      // Check if we're editing a "default" fallback service (not actually in DB)
+      const isDefaultService = editingService?.id.startsWith('default-')
+
+      if (editingService && !isDefaultService) {
+        // Update existing service in database
         const { error } = await supabase
           .from('services')
           .update(serviceData)
@@ -308,12 +312,13 @@ export default function AdminPage() {
         if (error) throw error
         toast.success('Service updated!')
       } else {
+        // Insert new service (either brand new or converting a default fallback to real DB entry)
         const { error } = await supabase
           .from('services')
           .insert(serviceData)
 
         if (error) throw error
-        toast.success('Service added!')
+        toast.success(isDefaultService ? 'Service saved to database!' : 'Service added!')
       }
 
       setShowServiceModal(false)
