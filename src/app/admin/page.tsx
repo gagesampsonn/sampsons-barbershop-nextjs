@@ -325,9 +325,11 @@ export default function AdminPage() {
       setEditingService(null)
       resetServiceForm()
       fetchData()
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error saving service:', error)
-      toast.error('Failed to save service. Make sure to run the database migration first.')
+      const errorMessage = error instanceof Error ? error.message : 
+        (error as { message?: string })?.message || 'Unknown error'
+      toast.error(`Failed to save service: ${errorMessage}`)
     } finally {
       setSaving(false)
     }
