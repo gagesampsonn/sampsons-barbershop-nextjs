@@ -40,6 +40,7 @@ export default function AdminPage() {
   const [userEmail, setUserEmail] = useState<string>('')
   const router = useRouter()
   const supabase = createClient()
+  const supabaseReady = Boolean(supabase)
 
   // Exception form state
   const [exceptionForm, setExceptionForm] = useState({
@@ -62,6 +63,10 @@ export default function AdminPage() {
   })
 
   const fetchData = useCallback(async () => {
+    if (!supabase) {
+      setLoading(false)
+      return
+    }
     try {
       // Get user
       const { data: { user } } = await supabase.auth.getUser()
@@ -119,7 +124,7 @@ export default function AdminPage() {
         // Set default services if table doesn't exist
         setServices([
           { id: 'default-1', name: 'Haircut', description: 'Classic haircut tailored to your style. Includes consultation, cut, and styling.', price: 10, icon: 'scissors', accent_color: 'red', display_order: 1, is_active: true, updated_at: new Date().toISOString() },
-          { id: 'default-2', name: 'Beard Trim', description: 'Professional beard shaping and trimming. Keep your facial hair looking sharp.', price: 8, icon: 'user', accent_color: 'blue', display_order: 2, is_active: true, updated_at: new Date().toISOString() },
+          { id: 'default-2', name: 'Beard Trim', description: 'Professional beard shaping and trimming. Keep your facial hair looking sharp.', price: 10, icon: 'user', accent_color: 'blue', display_order: 2, is_active: true, updated_at: new Date().toISOString() },
           { id: 'default-3', name: 'Senior Haircut', description: 'Quality haircut for our valued senior customers (65+). Same great service.', price: 9, icon: 'userCheck', accent_color: 'red', display_order: 3, is_active: true, updated_at: new Date().toISOString() }
         ])
       } else {
@@ -139,12 +144,17 @@ export default function AdminPage() {
   }, [fetchData])
 
   async function handleLogout() {
+    if (!supabase) return
     await supabase.auth.signOut()
     router.push('/admin/login')
     router.refresh()
   }
 
   async function saveWeeklyHours() {
+    if (!supabase) {
+      toast.error('Database not connected. Check Supabase environment variables.')
+      return
+    }
     setSaving(true)
     try {
       for (const hours of weeklyHours) {
@@ -173,6 +183,10 @@ export default function AdminPage() {
   }
 
   async function saveException() {
+    if (!supabase) {
+      toast.error('Database not connected.')
+      return
+    }
     // Validate
     if (!exceptionForm.date || !exceptionForm.label) {
       toast.error('Date and label are required')
@@ -232,6 +246,7 @@ export default function AdminPage() {
   }
 
   async function deleteException(id: string) {
+    if (!supabase) return
     if (!confirm('Delete this exception?')) return
 
     try {
@@ -275,6 +290,10 @@ export default function AdminPage() {
 
   // Service functions
   async function saveService() {
+    if (!supabase) {
+      toast.error('Database not connected.')
+      return
+    }
     if (!serviceForm.name || !serviceForm.price) {
       toast.error('Name and price are required')
       return
@@ -336,6 +355,7 @@ export default function AdminPage() {
   }
 
   async function deleteService(id: string) {
+    if (!supabase) return
     if (!confirm('Delete this service?')) return
 
     try {
@@ -419,6 +439,11 @@ export default function AdminPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-8 space-y-8">
+        {!supabaseReady && (
+          <div className="p-4 rounded-2xl bg-[var(--accent-red)]/10 border border-[var(--accent-red)]/30 text-[var(--accent-red)] text-sm">
+            Supabase is not configured on this deployment. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in Vercel, then redeploy.
+          </div>
+        )}
         {/* Square Data Card */}
         <a 
           href="/admin/analytics"

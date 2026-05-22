@@ -21,6 +21,11 @@ function LoginForm() {
     setError(null)
 
     const supabase = createClient()
+    if (!supabase) {
+      setError('Admin database is not configured. Contact your developer to add Supabase keys in Vercel.')
+      setLoading(false)
+      return
+    }
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -40,11 +45,13 @@ function LoginForm() {
   return (
     <>
       {/* Error messages */}
-      {(errorFromUrl === 'unauthorized' || error) && (
-        <div className="mb-6 p-4 rounded-lg bg-[var(--accent-red)]/10 border border-[var(--accent-red)]/30 flex items-start gap-3">
+      {(errorFromUrl === 'unauthorized' || errorFromUrl === 'setup' || error) && (
+        <div className="mb-6 p-4 rounded-2xl bg-[var(--accent-red)]/10 border border-[var(--accent-red)]/30 flex items-start gap-3">
           <AlertCircle size={20} className="text-[var(--accent-red)] flex-shrink-0 mt-0.5" />
           <p className="text-[var(--accent-red)] text-sm">
-            {errorFromUrl === 'unauthorized' 
+            {errorFromUrl === 'setup'
+              ? 'Admin panel needs Supabase environment variables on Vercel (NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY).'
+              : errorFromUrl === 'unauthorized' 
               ? 'Your account is not authorized to access the admin panel.'
               : error}
           </p>

@@ -9,13 +9,13 @@ export async function updateSession(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  // If no Supabase credentials, allow request to proceed (for dev without Supabase)
+  // If no Supabase credentials, allow public site; admin login shows setup error
   if (!url || !key) {
-    // For admin routes without Supabase, redirect to home
-    if (request.nextUrl.pathname.startsWith('/admin')) {
-      const homeUrl = request.nextUrl.clone()
-      homeUrl.pathname = '/'
-      return NextResponse.redirect(homeUrl)
+    if (request.nextUrl.pathname.startsWith('/admin') && request.nextUrl.pathname !== '/admin/login') {
+      const loginUrl = request.nextUrl.clone()
+      loginUrl.pathname = '/admin/login'
+      loginUrl.searchParams.set('error', 'setup')
+      return NextResponse.redirect(loginUrl)
     }
     return supabaseResponse
   }

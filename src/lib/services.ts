@@ -17,7 +17,7 @@ const DEFAULT_SERVICES: Service[] = [
     id: 'default-2',
     name: 'Beard Trim',
     description: 'Professional beard shaping and trimming. Keep your facial hair looking sharp.',
-    price: 8,
+    price: 10,
     icon: 'user',
     accent_color: 'blue',
     display_order: 2,
@@ -55,6 +55,11 @@ export async function getServices(): Promise<Service[]> {
     return DEFAULT_SERVICES
   }
 
-  return data
+  // Normalize known pricing until updated in Supabase admin
+  return data.map((service) =>
+    service.name.toLowerCase().includes('beard trim') && Number(service.price) < 10
+      ? { ...service, price: 10 }
+      : service
+  )
 }
 

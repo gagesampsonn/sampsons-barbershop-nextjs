@@ -80,6 +80,10 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     const checkAuth = async () => {
+      if (!supabase) {
+        router.push('/admin/login?error=setup')
+        return
+      }
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         router.push('/admin/login')

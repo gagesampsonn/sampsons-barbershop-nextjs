@@ -81,7 +81,7 @@ export default async function HomePage() {
       )}
 
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 w-full bg-[var(--barber-bg)]/95 backdrop-blur-md border-b border-[var(--barber-border)]">
+      <nav className="sticky top-0 z-50 w-full bg-[var(--barber-bg)]/80 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <a href="#" className="flex items-center gap-3 group">
@@ -104,7 +104,7 @@ export default async function HomePage() {
 
             <a 
               href="tel:740-357-8269"
-              className="px-5 py-2 bg-[var(--accent-red)] hover:bg-[var(--accent-red-light)] text-white font-semibold rounded-lg text-sm transition-all shadow-glow-red font-sans"
+              className="px-6 py-2.5 bg-[var(--accent-red)] hover:bg-[var(--accent-red-light)] text-white font-semibold rounded-full text-sm transition-all shadow-glow-red font-sans"
             >
               Call Now
             </a>
@@ -115,8 +115,8 @@ export default async function HomePage() {
       <main className="flex-grow">
         {/* Hero Section */}
         <section className="relative pt-16 pb-20 overflow-hidden">
-          {/* Subtle gradient background */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[var(--barber-surface)] to-[var(--barber-bg)]"></div>
+          <div className="hero-glow" aria-hidden="true" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[var(--barber-surface)]/40 to-[var(--barber-bg)]"></div>
           
           {/* Barber poles */}
           <div className="absolute left-4 top-20 bottom-20 w-4 hidden lg:block barber-stripe rounded-full opacity-60"></div>
@@ -125,7 +125,7 @@ export default async function HomePage() {
           <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
             <div className="max-w-4xl mx-auto text-center">
               {/* Established Badge */}
-              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-[var(--barber-surface)] border border-[var(--barber-border)] mb-8">
+              <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-[var(--barber-surface)]/60 backdrop-blur-sm mb-8">
                 <span className="text-[var(--text-muted)] text-sm font-sans">Est. 2008</span>
                 <span className="text-[var(--barber-border)]">|</span>
                 <a href="https://www.google.com/maps/place/Sampson's+Barber+Shop/@38.73,-82.84,15z" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sm text-[var(--text-secondary)] hover:text-[var(--accent-red)] transition-colors font-sans">
@@ -154,17 +154,17 @@ export default async function HomePage() {
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
-                <a href="#services" className="inline-flex items-center gap-3 px-8 py-4 bg-[var(--accent-red)] hover:bg-[var(--accent-red-light)] text-white font-semibold rounded-xl text-lg transition-all shadow-glow-red font-sans">
+                <a href="#services" className="inline-flex items-center gap-3 px-8 py-4 bg-[var(--accent-red)] hover:bg-[var(--accent-red-light)] text-white font-semibold rounded-full text-lg transition-all shadow-glow-red font-sans">
                   <Scissors size={22} />
                   View Services
                 </a>
-                <a href="tel:740-357-8269" className="inline-flex items-center gap-3 px-8 py-4 bg-[var(--barber-surface)] hover:bg-[var(--barber-elevated)] text-[var(--text-primary)] font-medium rounded-xl border border-[var(--barber-border)] transition-all font-sans">
+                <a href="tel:740-357-8269" className="inline-flex items-center gap-3 px-8 py-4 bg-[var(--barber-surface)]/80 hover:bg-[var(--barber-elevated)] text-[var(--text-primary)] font-medium rounded-full backdrop-blur-sm transition-all font-sans">
                   <Phone size={20} />
                   (740) 357-8269
                 </a>
               </div>
 
-              <div className="inline-flex items-center gap-3 px-5 py-3 rounded-xl bg-[var(--barber-surface)] border border-[var(--barber-border)]">
+              <div className="inline-flex items-center gap-3 px-5 py-3 rounded-full bg-[var(--barber-surface)]/70 backdrop-blur-sm">
                 <MapPin size={18} className="text-[var(--accent-red)]" />
                 <div className="text-left">
                   <p className="text-sm font-medium text-[var(--text-primary)] font-sans">8520 Ohio River Road</p>
@@ -178,7 +178,7 @@ export default async function HomePage() {
         {/* Exterior Photo Section */}
         <section className="py-8 bg-[var(--barber-bg)]">
           <div className="max-w-5xl mx-auto px-6 lg:px-8">
-            <div className="relative w-full h-[280px] md:h-[380px] rounded-xl overflow-hidden vintage-frame">
+            <div className="relative w-full h-[280px] md:h-[380px] rounded-3xl overflow-hidden vintage-frame">
               <Image 
                 src="/exterior-color.jpg" 
                 alt="Sampson's Barber Shop exterior"
@@ -191,7 +191,7 @@ export default async function HomePage() {
         </section>
 
         {/* Services Section */}
-        <section id="services" className="py-20 bg-[var(--barber-surface)] border-t border-[var(--barber-border)]">
+        <section id="services" className="py-20 bg-gradient-to-b from-[var(--barber-bg)] to-[var(--barber-surface)]/30">
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="max-w-2xl mb-12 text-center mx-auto">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded bg-[var(--barber-bg)] border border-[var(--barber-border)] text-[var(--text-secondary)] text-xs font-medium tracking-wide mb-4 font-sans">
@@ -208,10 +208,8 @@ export default async function HomePage() {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
               {services.map((service) => (
-                <div key={service.id} className="group relative bg-[var(--barber-bg)] rounded-xl border border-[var(--barber-border)] p-8 hover:border-[var(--barber-border-light)] transition-all duration-300 text-center">
-                  <div className={`absolute top-0 left-0 right-0 h-1 ${service.accent_color === 'red' ? 'bg-[var(--accent-red)]' : 'bg-[var(--accent-blue)]'}`}></div>
-                  
-                  <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-6 mx-auto ${service.accent_color === 'red' ? 'bg-[var(--accent-red)]/10 text-[var(--accent-red)]' : 'bg-[var(--accent-blue)]/10 text-[var(--accent-blue)]'}`}>
+                <div key={service.id} className="soft-card group relative p-8 text-center">
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-6 mx-auto ${service.accent_color === 'red' ? 'bg-[var(--accent-red)]/15 text-[var(--accent-red)]' : 'bg-[var(--accent-blue)]/15 text-[var(--accent-blue)]'}`}>
                     <ServiceIcon icon={service.icon} />
                   </div>
                   
@@ -228,15 +226,15 @@ export default async function HomePage() {
             </div>
             
             <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--barber-bg)] border border-[var(--barber-border)] text-[var(--text-secondary)] text-sm font-sans">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--barber-bg)]/50 text-[var(--text-secondary)] text-sm font-sans">
                 <span className="w-2 h-2 bg-green-500 rounded-full"></span>
                 Good for Kids
               </div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--barber-bg)] border border-[var(--barber-border)] text-[var(--text-secondary)] text-sm font-sans">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--barber-bg)]/50 text-[var(--text-secondary)] text-sm font-sans">
                 <span className="w-2 h-2 bg-[var(--accent-blue)] rounded-full"></span>
                 Walk-ins Only
               </div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--barber-bg)] border border-[var(--barber-border)] text-[var(--text-secondary)] text-sm font-sans">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--barber-bg)]/50 text-[var(--text-secondary)] text-sm font-sans">
                 <span className="w-2 h-2 bg-[var(--accent-red)] rounded-full"></span>
                 Cash &amp; Cards Accepted
               </div>
@@ -245,7 +243,7 @@ export default async function HomePage() {
         </section>
 
         {/* Hairstyle Gallery Section */}
-        <section id="gallery" className="py-20 bg-[var(--barber-bg)] border-t border-[var(--barber-border)]">
+        <section id="gallery" className="py-20 bg-[var(--barber-bg)]">
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="text-center mb-12">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded bg-[var(--barber-surface)] border border-[var(--barber-border)] text-[var(--text-secondary)] text-xs font-medium tracking-wide mb-4 font-sans">
@@ -261,7 +259,7 @@ export default async function HomePage() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="vintage-frame rounded-lg overflow-hidden bg-white">
+              <div className="vintage-frame overflow-hidden bg-white">
                 <Image 
                   src="/hairstyles-1.png" 
                   alt="Men's Clipper Cuts Guide"
@@ -270,7 +268,7 @@ export default async function HomePage() {
                   className="w-full h-auto"
                 />
               </div>
-              <div className="vintage-frame rounded-lg overflow-hidden bg-white">
+              <div className="vintage-frame overflow-hidden bg-white">
                 <Image 
                   src="/hairstyles-2.png" 
                   alt="The Barber Hairstyle Guide"
@@ -279,7 +277,7 @@ export default async function HomePage() {
                   className="w-full h-auto"
                 />
               </div>
-              <div className="vintage-frame rounded-lg overflow-hidden bg-white">
+              <div className="vintage-frame overflow-hidden bg-white">
                 <Image 
                   src="/hairstyles-3.png" 
                   alt="The Barber Hairstyle Guide"
@@ -293,9 +291,9 @@ export default async function HomePage() {
         </section>
 
         {/* Reviews Section */}
-        <section id="reviews" className="py-20 bg-[var(--barber-surface)] border-t border-[var(--barber-border)]">
+        <section id="reviews" className="py-20 bg-[var(--barber-surface)]/40">
           <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
-            <div className="glass-panel rounded-2xl p-8 mb-8">
+            <div className="soft-panel rounded-2xl p-8 mb-8">
               <div className="flex items-center justify-center gap-2 mb-4">
                 <Image src="/google-logo.svg" alt="Google" width={24} height={24} className="opacity-80" />
                 <span className="text-[var(--text-muted)] text-sm font-sans">Google Reviews</span>
@@ -313,7 +311,7 @@ export default async function HomePage() {
               </a>
             </div>
             
-            <div className="glass-panel rounded-xl p-6">
+            <div className="soft-panel rounded-xl p-6">
               <p className="text-[var(--text-secondary)] italic mb-4">
                 &quot;Great place for a haircut. Friendly staff and always does a great job. Been going here for years!&quot;
               </p>
@@ -323,7 +321,7 @@ export default async function HomePage() {
         </section>
 
         {/* Busyness Chart Section */}
-        <section id="busy-times" className="py-20 bg-[var(--barber-bg)] border-t border-[var(--barber-border)]">
+        <section id="busy-times" className="py-20 bg-[var(--barber-bg)]">
           <div className="max-w-4xl mx-auto px-6 lg:px-8">
             <div className="text-center mb-10">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded bg-[var(--barber-surface)] border border-[var(--barber-border)] text-[var(--text-secondary)] text-xs font-medium tracking-wide mb-4 font-sans">
@@ -339,7 +337,7 @@ export default async function HomePage() {
             </div>
 
             {/* Busyness Chart */}
-            <div className="glass-panel rounded-2xl p-6 md:p-8">
+            <div className="soft-panel rounded-2xl p-6 md:p-8">
               {/* Legend */}
               <div className="flex items-center justify-center gap-6 mb-6 text-sm font-sans">
                 <div className="flex items-center gap-2">
@@ -385,7 +383,7 @@ export default async function HomePage() {
                       {row.levels.map((level, i) => (
                         <div
                           key={i}
-                          className={`h-10 rounded-md flex items-center justify-center transition-all ${
+                          className={`h-10 rounded-2xl flex items-center justify-center transition-all ${
                             level === 0 
                               ? 'bg-[var(--barber-surface)] border border-[var(--barber-border)]' 
                               : level === 1 
@@ -443,11 +441,11 @@ export default async function HomePage() {
         </section>
 
         {/* Hours & Location Section */}
-        <section id="hours" className="py-20 bg-[var(--barber-surface)] border-t border-[var(--barber-border)]">
+        <section id="hours" className="py-20 bg-gradient-to-b from-[var(--barber-surface)]/30 to-[var(--barber-bg)]">
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
               {/* Hours */}
-              <div className="glass-panel rounded-2xl p-8">
+              <div className="soft-panel rounded-2xl p-8">
                 <div className="flex items-center gap-2 text-[var(--accent-blue)] mb-4">
                   <Clock size={20} />
                   <span className="text-sm font-medium font-sans">Business Hours</span>
@@ -481,7 +479,7 @@ export default async function HomePage() {
               </div>
 
               {/* Location */}
-              <div id="location" className="glass-panel rounded-2xl p-8">
+              <div id="location" className="soft-panel rounded-2xl p-8">
                 <div className="flex items-center gap-2 text-[var(--accent-red)] mb-4">
                   <MapPin size={20} />
                   <span className="text-sm font-medium font-sans">Location</span>
@@ -502,7 +500,7 @@ export default async function HomePage() {
                 </div>
                 
                 <div className="space-y-4">
-                  <div className="flex items-start gap-4 p-4 rounded-xl bg-[var(--barber-bg)] border border-[var(--barber-border)]">
+                  <div className="flex items-start gap-4 p-4 rounded-2xl bg-[var(--barber-bg)]/60">
                     <MapPin size={20} className="text-[var(--accent-red)] flex-shrink-0 mt-1" />
                     <div className="flex-grow">
                       <p className="text-[var(--text-primary)] font-medium font-sans">8520 Ohio River Road</p>
@@ -513,7 +511,7 @@ export default async function HomePage() {
                     </a>
                   </div>
                   
-                  <a href="tel:740-357-8269" className="flex items-center gap-4 p-4 rounded-xl bg-[var(--barber-bg)] border border-[var(--barber-border)] hover:border-[var(--accent-blue)] transition-colors">
+                  <a href="tel:740-357-8269" className="flex items-center gap-4 p-4 rounded-2xl bg-[var(--barber-bg)]/60 hover:bg-[var(--barber-elevated)]/80 transition-colors">
                     <Phone size={20} className="text-[var(--accent-blue)]" />
                     <div>
                       <p className="text-[var(--text-primary)] font-medium font-sans">(740) 357-8269</p>
@@ -526,7 +524,7 @@ export default async function HomePage() {
 
             {/* Upcoming Exceptions */}
             {exceptions.length > 0 && (
-              <div className="mt-12 glass-panel rounded-2xl p-8">
+              <div className="mt-12 soft-panel rounded-2xl p-8">
                 <h3 className="text-xl font-bold text-[var(--text-primary)] mb-6 flex items-center gap-3 font-sans">
                   <Clock size={24} className="text-[var(--accent-red)]" />
                   Upcoming Holiday / Special Hours
@@ -562,7 +560,7 @@ export default async function HomePage() {
         </section>
 
         {/* Walk-ins Section */}
-        <section className="py-20 bg-[var(--barber-surface)] border-t border-[var(--barber-border)]">
+        <section className="py-20 bg-[var(--barber-surface)]/30">
           <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded bg-[var(--barber-bg)] border border-[var(--barber-border)] text-[var(--text-secondary)] text-xs font-medium tracking-wide mb-4 font-sans">
               <Scissors size={14} className="text-[var(--accent-red)]" />
@@ -577,7 +575,7 @@ export default async function HomePage() {
               No appointment needed! Just <span className="text-[var(--accent-blue)] font-semibold">walk in</span> during business hours and we&apos;ll take care of you.
             </p>
             
-            <div className="glass-panel rounded-xl p-8 max-w-2xl mx-auto mb-10">
+            <div className="soft-panel rounded-xl p-8 max-w-2xl mx-auto mb-10">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-16 h-16 rounded-full bg-[var(--accent-blue)]/10 flex items-center justify-center">
                   <Clock size={32} className="text-[var(--accent-blue)]" />
@@ -603,7 +601,7 @@ export default async function HomePage() {
               </div>
             </div>
 
-            <div className="glass-panel rounded-2xl p-8 max-w-xl mx-auto">
+            <div className="soft-panel rounded-2xl p-8 max-w-xl mx-auto">
               <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2 font-sans">
                 Ready for a Fresh Cut?
               </h3>
@@ -613,7 +611,7 @@ export default async function HomePage() {
               
               <a
                 href="#hours"
-                className="inline-flex items-center justify-center gap-3 w-full sm:w-auto px-10 py-4 bg-[var(--accent-red)] hover:bg-[var(--accent-red-light)] text-white font-semibold rounded-xl text-lg transition-all shadow-glow-red font-sans"
+                className="inline-flex items-center justify-center gap-3 w-full sm:w-auto px-10 py-4 bg-[var(--accent-red)] hover:bg-[var(--accent-red-light)] text-white font-semibold rounded-full text-lg transition-all shadow-glow-red font-sans"
               >
                 <Clock size={22} />
                 View Hours
@@ -703,9 +701,10 @@ export default async function HomePage() {
             <p className="text-xs text-[var(--text-muted)] font-sans">
               &copy; {new Date().getFullYear()} Sampson&apos;s Barbershop. All rights reserved.
             </p>
-            <div className="flex items-center gap-2 text-xs text-[var(--text-muted)] font-sans">
+            <div className="flex items-center gap-4 text-xs text-[var(--text-muted)] font-sans">
               <span className="w-1.5 h-1.5 bg-[var(--accent-red)] rounded-full"></span>
               <span>Wheelersburg, Ohio</span>
+              <a href="/admin/login" className="hover:text-[var(--text-secondary)] transition-colors">Admin</a>
             </div>
           </div>
         </div>

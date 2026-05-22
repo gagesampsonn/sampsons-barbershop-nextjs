@@ -17,7 +17,7 @@ CREATE INDEX IF NOT EXISTS idx_services_order ON services(display_order);
 -- Insert default services
 INSERT INTO services (name, description, price, icon, accent_color, display_order) VALUES
   ('Haircut', 'Classic haircut tailored to your style. Includes consultation, cut, and styling.', 10.00, 'scissors', 'red', 1),
-  ('Beard Trim', 'Professional beard shaping and trimming. Keep your facial hair looking sharp.', 8.00, 'user', 'blue', 2),
+  ('Beard Trim', 'Professional beard shaping and trimming. Keep your facial hair looking sharp.', 10.00, 'user', 'blue', 2),
   ('Senior Haircut', 'Quality haircut for our valued senior customers (65+). Same great service.', 9.00, 'userCheck', 'red', 3)
 ON CONFLICT DO NOTHING;
 
