@@ -194,7 +194,7 @@ export default async function HomePage() {
         <section id="services" className="py-20 bg-gradient-to-b from-[var(--barber-bg)] to-[var(--barber-surface)]/30">
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="max-w-2xl mb-12 text-center mx-auto">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded bg-[var(--barber-bg)] border border-[var(--barber-border)] text-[var(--text-secondary)] text-xs font-medium tracking-wide mb-4 font-sans">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--barber-bg)]/60 text-[var(--text-secondary)] text-xs font-medium tracking-wide mb-4 font-sans">
                 <Scissors size={14} className="text-[var(--accent-red)]" />
                 Our Services
               </div>
@@ -246,7 +246,7 @@ export default async function HomePage() {
         <section id="gallery" className="py-20 bg-[var(--barber-bg)]">
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded bg-[var(--barber-surface)] border border-[var(--barber-border)] text-[var(--text-secondary)] text-xs font-medium tracking-wide mb-4 font-sans">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--barber-surface)]/60 text-[var(--text-secondary)] text-xs font-medium tracking-wide mb-4 font-sans">
                 <Scissors size={14} className="text-[var(--accent-blue)]" />
                 Style Guide
               </div>
@@ -324,7 +324,7 @@ export default async function HomePage() {
         <section id="busy-times" className="py-20 bg-[var(--barber-bg)]">
           <div className="max-w-4xl mx-auto px-6 lg:px-8">
             <div className="text-center mb-10">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded bg-[var(--barber-surface)] border border-[var(--barber-border)] text-[var(--text-secondary)] text-xs font-medium tracking-wide mb-4 font-sans">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--barber-surface)]/60 text-[var(--text-secondary)] text-xs font-medium tracking-wide mb-4 font-sans">
                 <Users size={14} className="text-[var(--accent-blue)]" />
                 Best Times to Visit
               </div>
@@ -486,7 +486,7 @@ export default async function HomePage() {
                 </div>
                 <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-6 font-sans">Find Us Here</h2>
                 
-                <div className="aspect-video rounded-xl overflow-hidden mb-6 bg-[var(--barber-surface)] border border-[var(--barber-border)]">
+                <div className="aspect-video rounded-3xl overflow-hidden mb-6 bg-[var(--barber-surface)]/50">
                   <iframe
                     src="https://maps.google.com/maps?q=Sampson's+Barber+Shop+8520+Ohio+River+Rd+Wheelersburg+OH+45694&t=&z=15&ie=UTF8&iwloc=&output=embed"
                     width="100%"
@@ -531,7 +531,7 @@ export default async function HomePage() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {exceptions.map((exception) => (
-                    <div key={exception.id} className="p-4 rounded-xl bg-[var(--barber-bg)] border border-[var(--barber-border)]">
+                    <div key={exception.id} className="p-4 rounded-2xl bg-[var(--barber-bg)]/60">
                       <div className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium mb-2 font-sans ${exception.type === 'closed' ? 'bg-[var(--accent-red)]/20 text-[var(--accent-red)]' : 'bg-[var(--accent-blue)]/20 text-[var(--accent-blue)]'}`}>
                         {exception.type === 'closed' ? 'CLOSED' : 'MODIFIED HOURS'}
                       </div>
