@@ -4,6 +4,8 @@ import { getWeeklyHours, getUpcomingExceptions, isCurrentlyOpen, formatHoursForD
 import { getServices } from '@/lib/services'
 import { DAY_NAMES, formatTimeForDisplay } from '@/lib/types'
 import { SectionIntro } from '@/components/SectionIntro'
+import { BusyTimesChart } from '@/components/BusyTimesChart'
+import { SiteNav } from '@/components/SiteNav'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 60
@@ -60,41 +62,12 @@ export default async function HomePage() {
         </div>
       )}
 
-      <nav className="sticky top-0 z-50 bg-[var(--barber-surface)] border-b border-[var(--barber-border)]">
-        <div className="max-w-6xl mx-auto px-6 lg:px-8">
-          <div className="flex justify-between h-[4.5rem] items-center">
-            <a href="#" className="flex items-center gap-3">
-              <Image
-                src="/logo.png"
-                alt="Sampson's Barbershop"
-                width={52}
-                height={52}
-                className="h-12 w-auto object-contain"
-                priority
-              />
-              <span className="font-serif text-lg text-[var(--text-primary)] hidden sm:block">Sampson&apos;s Barbershop</span>
-            </a>
-
-            <div className="hidden md:flex items-center gap-8 text-sm text-[var(--text-secondary)]">
-              <a href="#services" className="hover:text-[var(--accent-red)] transition-colors">Services</a>
-              <a href="#reviews" className="hover:text-[var(--accent-red)] transition-colors">Reviews</a>
-              <a href="#busy-times" className="hover:text-[var(--accent-red)] transition-colors">Busy Times</a>
-              <a href="#hours" className="hover:text-[var(--accent-red)] transition-colors">Hours</a>
-              <a href="#location" className="hover:text-[var(--accent-red)] transition-colors">Location</a>
-            </div>
-
-            <a href="tel:740-357-8269" className="btn btn-primary">
-              <Phone size={15} aria-hidden />
-              Call Now
-            </a>
-          </div>
-        </div>
-      </nav>
+      <SiteNav />
 
       <main className="flex-grow">
         {/* Hero — logo + copy on cream; photo below */}
         <section className="border-b border-[var(--barber-border)] bg-[var(--barber-surface)]">
-          <div className="max-w-6xl mx-auto px-6 lg:px-8 py-12 md:py-16 text-center">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 text-center">
             <Image
               src="/logo.png"
               alt="Sampson's Barbershop"
@@ -172,7 +145,7 @@ export default async function HomePage() {
         </section>
 
         <section id="services" className="py-16 md:py-20 border-b border-[var(--barber-border)]">
-          <div className="max-w-6xl mx-auto px-6 lg:px-8">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <SectionIntro
               kicker="Our Services"
               title="Quality Cuts at Honest Prices"
@@ -196,7 +169,7 @@ export default async function HomePage() {
         </section>
 
         <section id="gallery" className="py-16 md:py-20 border-b border-[var(--barber-border)] bg-[var(--barber-elevated)]">
-          <div className="max-w-6xl mx-auto px-6 lg:px-8">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <SectionIntro
               kicker="Style Guide"
               title="Classic Barbershop Styles"
@@ -218,7 +191,7 @@ export default async function HomePage() {
         </section>
 
         <section id="reviews" className="py-16 md:py-20 border-b border-[var(--barber-border)]">
-          <div className="max-w-3xl mx-auto px-6 lg:px-8">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <SectionIntro kicker="Google Reviews" title="What Folks Are Saying" />
 
             <div className="surface p-8 md:p-10 text-center">
@@ -253,93 +226,19 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section id="busy-times" className="py-16 md:py-20 border-b border-[var(--barber-border)]">
-          <div className="max-w-4xl mx-auto px-6 lg:px-8">
+        <section id="busy-times" className="py-12 md:py-20 border-b border-[var(--barber-border)]">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <SectionIntro
               kicker="Best Times to Visit"
               title="When It's Quiet"
               description="Plan your visit when it's less busy. Here's our typical weekly traffic pattern."
             />
-
-            <div className="surface p-6 md:p-8">
-              <div className="flex flex-wrap items-center justify-center gap-6 mb-6 text-sm text-[var(--text-muted)]">
-                <span className="inline-flex items-center gap-2">
-                  <span className="w-3 h-3 border border-[var(--barber-border)] bg-[#e8f0e8]" aria-hidden />
-                  Quiet
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <span className="w-3 h-3 border border-[var(--barber-border)] bg-[#f5eed8]" aria-hidden />
-                  Moderate
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <span className="w-3 h-3 border border-[var(--barber-border)] bg-[#f0e4e4]" aria-hidden />
-                  Busy
-                </span>
-              </div>
-
-              <div className="overflow-x-auto">
-                <div className="min-w-[500px] text-sm">
-                  <div className="grid grid-cols-[90px_repeat(5,1fr)] gap-px mb-px bg-[var(--barber-border)]">
-                    <div className="bg-[var(--barber-surface)] p-2" />
-                    {['9–10 AM', '10–12 PM', '12–2 PM', '2–4 PM', '4–5 PM'].map((t) => (
-                      <div key={t} className="bg-[var(--barber-surface)] p-2 text-center text-xs text-[var(--text-muted)]">
-                        {t}
-                      </div>
-                    ))}
-                  </div>
-
-                  {[
-                    { day: 'Monday', levels: [1, 2, 2, 1, 2] },
-                    { day: 'Tuesday', levels: [1, 1, 2, 1, 2] },
-                    { day: 'Wednesday', levels: [1, 2, 2, 2, 2] },
-                    { day: 'Thursday', levels: [1, 2, 2, 1, 2] },
-                    { day: 'Friday', levels: [2, 2, 3, 2, 3] },
-                    { day: 'Saturday', levels: [3, 3, 0, 0, 0] },
-                  ].map((row, idx) => (
-                    <div key={idx} className="grid grid-cols-[90px_repeat(5,1fr)] gap-px mb-px bg-[var(--barber-border)]">
-                      <div className="bg-[var(--barber-surface)] p-2 font-medium text-[var(--text-primary)]">{row.day}</div>
-                      {row.levels.map((level, i) => (
-                        <div
-                          key={i}
-                          className={`bg-[var(--barber-surface)] p-2 text-center text-xs ${
-                            level === 0
-                              ? 'text-[var(--text-muted)]'
-                              : level === 1
-                                ? 'bg-[#e8f0e8]'
-                                : level === 2
-                                  ? 'bg-[#f5eed8]'
-                                  : 'bg-[#f0e4e4]'
-                          }`}
-                        >
-                          {level === 0 ? 'Closed' : ''}
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-
-                  <div className="grid grid-cols-[90px_repeat(5,1fr)] gap-px bg-[var(--barber-border)]">
-                    <div className="bg-[var(--barber-surface)] p-2 text-[var(--text-muted)]">Sunday</div>
-                    <div className="col-span-5 bg-[var(--barber-surface)] p-2 text-center text-xs text-[var(--text-muted)]">Closed</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-8 pt-6 border-t border-[var(--barber-border)] grid md:grid-cols-2 gap-6 text-sm">
-                <div>
-                  <p className="font-medium text-[var(--text-primary)] mb-1">Best time</p>
-                  <p className="text-[var(--text-muted)]">Weekday mornings (9–10 AM) are typically the quietest.</p>
-                </div>
-                <div>
-                  <p className="font-medium text-[var(--text-primary)] mb-1">Busiest time</p>
-                  <p className="text-[var(--text-muted)]">Saturday mornings and Friday afternoons tend to be busiest.</p>
-                </div>
-              </div>
-            </div>
+            <BusyTimesChart />
           </div>
         </section>
 
         <section id="hours" className="py-16 md:py-20 border-b border-[var(--barber-border)] bg-[var(--barber-elevated)]">
-          <div className="max-w-6xl mx-auto px-6 lg:px-8">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="surface p-8">
                 <p className="section-kicker">Business Hours</p>
@@ -444,7 +343,7 @@ export default async function HomePage() {
         </section>
 
         <section className="py-16 md:py-20 border-b border-[var(--barber-border)]">
-          <div className="max-w-2xl mx-auto px-6 lg:px-8 text-center">
+          <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <SectionIntro
               kicker="Walk-Ins Only"
               title="How to Get a Cut"
@@ -485,7 +384,7 @@ export default async function HomePage() {
       </main>
 
       <footer className="bg-[var(--barber-surface)] border-t border-[var(--barber-border)]">
-        <div className="max-w-6xl mx-auto px-6 lg:px-8 py-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="md:col-span-2">
               <div className="flex items-center gap-3 mb-4">

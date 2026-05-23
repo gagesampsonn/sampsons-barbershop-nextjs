@@ -18,6 +18,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Sampson's Barbershop | Wheelersburg, Ohio",
   description: "Quality haircuts and grooming services in Wheelersburg, Ohio. Family-friendly barbershop. Walk-ins only!",
+  icons: {
+    icon: [{ url: '/icon-barber-pole.png', type: 'image/png' }],
+    apple: [{ url: '/icon-barber-pole.png', type: 'image/png' }],
+  },
 };
 
 export default function RootLayout({
