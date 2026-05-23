@@ -1,150 +1,184 @@
 @import "tailwindcss";
 
 :root {
-  --barber-bg: #0a0a0c;
-  --barber-surface: #141418;
-  --barber-elevated: #1c1c22;
-  --barber-border: rgba(255, 255, 255, 0.08);
-  --barber-border-light: rgba(255, 255, 255, 0.14);
+  --barber-bg: #f5efe6;
+  --barber-surface: #ffffff;
+  --barber-elevated: #faf5ec;
+  --barber-border: #e0d6c8;
 
-  --accent-red: #c41e3a;
-  --accent-red-light: #e8294a;
+  --accent-red: #8b2424;
+  --accent-red-light: #a33030;
+  --accent-blue: #2c4f6b;
+  --accent-blue-light: #3e6a8a;
+  --accent-tan: #b8956a;
 
-  --accent-blue: #1e56a0;
-  --accent-blue-light: #2e7ad1;
+  --text-primary: #1d1d1f;
+  --text-secondary: #3f3a35;
+  --text-muted: #6b6660;
 
-  --text-primary: #ffffff;
-  --text-secondary: #c8c8d0;
-  --text-muted: #8a8a96;
 }
 
 body {
   background-color: var(--barber-bg);
   color: var(--text-primary);
-  font-family: 'Georgia', 'Times New Roman', serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-serif), Georgia, 'Times New Roman', serif;
+  letter-spacing: -0.02em;
+  font-weight: 600;
 }
 
-/* Softer panels — less boxy than glass-panel */
-.soft-panel {
-  background: linear-gradient(165deg, rgba(28, 28, 34, 0.75) 0%, rgba(14, 14, 18, 0.92) 100%);
+.font-serif {
+  font-family: var(--font-serif), Georgia, 'Times New Roman', serif;
+}
+
+.font-sans {
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+.pull-quote {
+  font-family: var(--font-serif), Georgia, 'Times New Roman', serif;
+  font-style: italic;
+}
+
+/* Section opener: tracked kicker + tan hairline */
+.section-kicker {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.section-rule {
+  display: block;
+  width: 3rem;
+  height: 1px;
+  background: var(--accent-tan);
+  margin: 0.75rem auto 0;
+}
+
+.section-rule-left {
+  margin: 0.75rem 0 0;
+}
+
+/* Flat surfaces — hairline border, no shadow */
+.surface {
+  background: var(--barber-surface);
   border: 1px solid var(--barber-border);
-  border-radius: 1.75rem;
-  backdrop-filter: blur(20px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  border-radius: 4px;
 }
 
-.soft-card {
-  background: linear-gradient(150deg, rgba(32, 32, 38, 0.55) 0%, rgba(18, 18, 22, 0.85) 100%);
-  border: 1px solid var(--barber-border);
-  border-radius: 1.5rem;
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+/* Buttons — rectangular, ~4px radius */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
-.soft-card:hover {
-  transform: translateY(-3px);
-  border-color: var(--barber-border-light);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+.btn-primary {
+  background: var(--accent-red);
+  color: #fff;
+  border-color: var(--accent-red);
 }
 
-.glass-panel {
-  background: linear-gradient(165deg, rgba(28, 28, 34, 0.75) 0%, rgba(14, 14, 18, 0.92) 100%);
-  border: 1px solid var(--barber-border);
-  border-radius: 1.75rem;
-  backdrop-filter: blur(20px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+.btn-primary:hover {
+  background: var(--accent-red-light);
+  border-color: var(--accent-red-light);
 }
 
-.shadow-glow-red {
-  box-shadow: 0 8px 32px rgba(196, 30, 58, 0.35);
+.btn-secondary {
+  background: var(--barber-surface);
+  color: var(--text-primary);
+  border-color: var(--barber-border);
 }
 
-.shadow-glow-blue {
-  box-shadow: 0 8px 32px rgba(30, 86, 160, 0.35);
+.btn-secondary:hover {
+  border-color: var(--accent-tan);
+  color: var(--accent-red);
 }
 
-.text-gradient-red {
-  background: linear-gradient(135deg, var(--accent-red) 0%, var(--accent-red-light) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* Hairstyle posters — thin tan frame, flat */
+.vintage-frame {
+  border: 1px solid var(--accent-tan);
+  border-radius: 4px;
+  overflow: hidden;
+  background: #fff;
+  padding: 6px;
 }
 
-.hero-glow {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(196, 30, 58, 0.12) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 40% at 90% 60%, rgba(30, 86, 160, 0.08) 0%, transparent 50%);
-  pointer-events: none;
+/* Admin — separate dark UI */
+.admin-scope {
+  --barber-bg: #0f0f12;
+  --barber-surface: #1a1a20;
+  --barber-elevated: #22222a;
+  --barber-border: rgba(255, 255, 255, 0.08);
+  --barber-border-light: rgba(255, 255, 255, 0.14);
+  --text-primary: #ffffff;
+  --text-secondary: #c8c8d0;
+  --text-muted: #8a8a96;
+  background: var(--barber-bg);
+  color: var(--text-primary);
+  min-height: 100vh;
 }
 
-.barber-stripe {
-  background: repeating-linear-gradient(
-    45deg,
-    #c41e3a,
-    #c41e3a 8px,
-    #ffffff 8px,
-    #ffffff 16px,
-    #1e56a0 16px,
-    #1e56a0 24px,
-    #ffffff 24px,
-    #ffffff 32px
-  );
-  border-radius: 9999px;
-  opacity: 0.45;
-}
-
-/* Admin */
 .admin-card {
   background: var(--barber-surface);
   border: 1px solid var(--barber-border);
-  border-radius: 1.25rem;
+  border-radius: 4px;
   padding: 24px;
 }
 
 .admin-input {
   background: var(--barber-bg);
   border: 1px solid var(--barber-border);
-  border-radius: 0.75rem;
+  border-radius: 4px;
   padding: 10px 14px;
   color: var(--text-primary);
   width: 100%;
-  transition: border-color 0.2s;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
 }
 
 .admin-input:focus {
   outline: none;
-  border-color: var(--accent-blue);
+  border-color: var(--accent-tan);
 }
 
 .admin-select {
   background: var(--barber-bg);
   border: 1px solid var(--barber-border);
-  border-radius: 0.75rem;
+  border-radius: 4px;
   padding: 10px 14px;
   color: var(--text-primary);
   cursor: pointer;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
 }
 
 .admin-select:focus {
   outline: none;
-  border-color: var(--accent-blue);
+  border-color: var(--accent-tan);
 }
 
 .admin-btn-primary {
   background: var(--accent-red);
   color: white;
   padding: 10px 20px;
-  border-radius: 9999px;
+  border-radius: 4px;
   font-weight: 600;
-  transition: background-color 0.2s;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
 }
 
 .admin-btn-primary:hover {
@@ -155,15 +189,14 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--barber-elevated);
   color: var(--text-primary);
   padding: 10px 20px;
-  border-radius: 9999px;
+  border-radius: 4px;
   font-weight: 500;
   border: 1px solid var(--barber-border);
-  transition: all 0.2s;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
 }
 
 .admin-btn-secondary:hover {
-  background: var(--barber-border-light);
+  border-color: var(--barber-border-light);
 }
 
 .toggle-switch {
@@ -173,7 +206,6 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--barber-border-light);
   border-radius: 13px;
   cursor: pointer;
-  transition: background-color 0.2s;
 }
 
 .toggle-switch.active {
@@ -194,11 +226,4 @@ h1, h2, h3, h4, h5, h6 {
 
 .toggle-switch.active::after {
   transform: translateX(22px);
-}
-
-.vintage-frame {
-  border: none;
-  border-radius: 1.5rem;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
 }

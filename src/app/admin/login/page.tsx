@@ -3,7 +3,8 @@
 import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Scissors, Mail, Lock, AlertCircle } from 'lucide-react'
+import Image from 'next/image'
+import { Mail, Lock, AlertCircle } from 'lucide-react'
 
 function LoginForm() {
   const [email, setEmail] = useState('')
@@ -46,7 +47,7 @@ function LoginForm() {
     <>
       {/* Error messages */}
       {(errorFromUrl === 'unauthorized' || errorFromUrl === 'setup' || error) && (
-        <div className="mb-6 p-4 rounded-2xl bg-[var(--accent-red)]/10 border border-[var(--accent-red)]/30 flex items-start gap-3">
+        <div className="mb-6 p-4 rounded bg-[var(--accent-red)]/10 border border-[var(--accent-red)]/30 flex items-start gap-3">
           <AlertCircle size={20} className="text-[var(--accent-red)] flex-shrink-0 mt-0.5" />
           <p className="text-[var(--accent-red)] text-sm">
             {errorFromUrl === 'setup'
@@ -128,9 +129,7 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--accent-red)] to-[var(--accent-red-light)] shadow-glow-red mb-4">
-            <Scissors size={32} className="text-white" />
-          </div>
+          <Image src="/logo.png" alt="Sampson's Barbershop" width={72} height={72} className="mx-auto h-16 w-auto object-contain mb-4" />
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">Admin Login</h1>
           <p className="text-[var(--text-muted)] mt-2">Sampson&apos;s Barbershop</p>
         </div>

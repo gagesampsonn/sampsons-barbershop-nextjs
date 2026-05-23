@@ -1,25 +1,12 @@
-import { Scissors, MapPin, Phone, Star, Clock, Navigation, User, UserCheck, Users, AlertTriangle, Calendar } from 'lucide-react'
+import { MapPin, Phone, Star, Clock, Navigation, AlertTriangle, Calendar } from 'lucide-react'
 import Image from 'next/image'
 import { getWeeklyHours, getUpcomingExceptions, isCurrentlyOpen, formatHoursForDay } from '@/lib/hours'
 import { getServices } from '@/lib/services'
-import { DAY_NAMES, formatTimeForDisplay, Service } from '@/lib/types'
+import { DAY_NAMES, formatTimeForDisplay } from '@/lib/types'
+import { SectionIntro } from '@/components/SectionIntro'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 60
-
-// Helper to get the icon component for a service
-const ServiceIcon = ({ icon, size = 32 }: { icon: string; size?: number }) => {
-  switch (icon) {
-    case 'scissors':
-      return <Scissors size={size} strokeWidth={1.5} />
-    case 'user':
-      return <User size={size} strokeWidth={1.5} />
-    case 'userCheck':
-      return <UserCheck size={size} strokeWidth={1.5} />
-    default:
-      return <Scissors size={size} strokeWidth={1.5} />
-  }
-}
 
 export default async function HomePage() {
   const weeklyHours = await getWeeklyHours()
@@ -27,85 +14,77 @@ export default async function HomePage() {
   const services = await getServices()
   const isOpen = isCurrentlyOpen(weeklyHours, exceptions)
 
-  // Get the soonest upcoming exception to feature in the banner
   const nextException = exceptions.length > 0 ? exceptions[0] : null
-  
-  // Format the exception date for display
+
   const formatExceptionDate = (dateStr: string) => {
     const date = new Date(dateStr + 'T00:00:00')
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const tomorrow = new Date(today)
     tomorrow.setDate(tomorrow.getDate() + 1)
-    
-    if (date.getTime() === today.getTime()) {
-      return 'Today'
-    } else if (date.getTime() === tomorrow.getTime()) {
-      return 'Tomorrow'
-    } else {
-      return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-    }
+
+    if (date.getTime() === today.getTime()) return 'Today'
+    if (date.getTime() === tomorrow.getTime()) return 'Tomorrow'
+    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Holiday/Exception Alert Banner */}
+    <div className="min-h-screen flex flex-col bg-[var(--barber-bg)]">
       {nextException && (
-        <div className={`relative z-50 ${nextException.type === 'closed' ? 'bg-gradient-to-r from-[var(--accent-red)] to-[#c41e3a]' : 'bg-gradient-to-r from-[var(--accent-blue)] to-[#1e5c8a]'}`}>
-          <div className="max-w-7xl mx-auto px-4 py-3">
-            <div className="flex items-center justify-center gap-3 text-white">
-              {nextException.type === 'closed' ? (
-                <AlertTriangle size={18} className="flex-shrink-0 animate-pulse" />
-              ) : (
-                <Calendar size={18} className="flex-shrink-0" />
+        <div
+          className={`border-b border-[var(--barber-border)] ${
+            nextException.type === 'closed' ? 'bg-[var(--accent-red)] text-white' : 'bg-[var(--accent-blue)] text-white'
+          }`}
+        >
+          <div className="max-w-6xl mx-auto px-6 py-2.5">
+            <p className="text-sm text-center">
+              {nextException.type === 'closed' && (
+                <AlertTriangle size={14} className="inline mr-1.5 -mt-0.5" aria-hidden />
               )}
-              <p className="text-sm md:text-base font-medium text-center font-sans">
-                <span className="font-bold">{nextException.label}</span>
-                <span className="mx-2">•</span>
-                <span>{formatExceptionDate(nextException.date)}</span>
-                <span className="mx-2">•</span>
-                {nextException.type === 'closed' ? (
-                  <span className="font-semibold">We&apos;ll be closed</span>
-                ) : (
-                  <span>
-                    Special hours: {formatTimeForDisplay(nextException.open_time)} - {formatTimeForDisplay(nextException.close_time)}
-                  </span>
-                )}
-              </p>
-              <a href="#hours" className="hidden sm:inline-flex items-center gap-1 px-3 py-1 bg-white/20 hover:bg-white/30 rounded-full text-xs font-medium transition-colors">
-                View Hours
-              </a>
-            </div>
+              {nextException.type === 'modified' && (
+                <Calendar size={14} className="inline mr-1.5 -mt-0.5" aria-hidden />
+              )}
+              <span className="font-medium">{nextException.label}</span>
+              <span className="mx-2 opacity-70">·</span>
+              <span>{formatExceptionDate(nextException.date)}</span>
+              <span className="mx-2 opacity-70">·</span>
+              {nextException.type === 'closed' ? (
+                <span>We&apos;ll be closed</span>
+              ) : (
+                <span>
+                  Special hours: {formatTimeForDisplay(nextException.open_time)} – {formatTimeForDisplay(nextException.close_time)}
+                </span>
+              )}
+            </p>
           </div>
         </div>
       )}
 
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 w-full bg-[var(--barber-bg)]/80 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <a href="#" className="flex items-center gap-3 group">
-              <Image 
-                src="/logo.png" 
-                alt="Sampson's Barbershop Logo" 
-                width={40} 
-                height={40} 
-                className="rounded-lg shadow-glow-red"
+      <nav className="sticky top-0 z-50 bg-[var(--barber-surface)] border-b border-[var(--barber-border)]">
+        <div className="max-w-6xl mx-auto px-6 lg:px-8">
+          <div className="flex justify-between h-[4.5rem] items-center">
+            <a href="#" className="flex items-center gap-3">
+              <Image
+                src="/logo.png"
+                alt="Sampson's Barbershop"
+                width={52}
+                height={52}
+                className="h-12 w-auto object-contain"
+                priority
               />
-              <span className="text-lg font-bold text-[var(--text-primary)] tracking-tight hidden sm:block font-sans">Sampson&apos;s Barbershop</span>
+              <span className="font-serif text-lg text-[var(--text-primary)] hidden sm:block">Sampson&apos;s Barbershop</span>
             </a>
 
-            <div className="hidden md:flex items-center gap-8 text-sm font-sans">
-              <a href="#services" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Services</a>
-              <a href="#busy-times" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Busy Times</a>
-              <a href="#hours" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Hours</a>
-              <a href="#location" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Location</a>
+            <div className="hidden md:flex items-center gap-8 text-sm text-[var(--text-secondary)]">
+              <a href="#services" className="hover:text-[var(--accent-red)] transition-colors">Services</a>
+              <a href="#reviews" className="hover:text-[var(--accent-red)] transition-colors">Reviews</a>
+              <a href="#busy-times" className="hover:text-[var(--accent-red)] transition-colors">Busy Times</a>
+              <a href="#hours" className="hover:text-[var(--accent-red)] transition-colors">Hours</a>
+              <a href="#location" className="hover:text-[var(--accent-red)] transition-colors">Location</a>
             </div>
 
-            <a 
-              href="tel:740-357-8269"
-              className="px-6 py-2.5 bg-[var(--accent-red)] hover:bg-[var(--accent-red-light)] text-white font-semibold rounded-full text-sm transition-all shadow-glow-red font-sans"
-            >
+            <a href="tel:740-357-8269" className="btn btn-primary">
+              <Phone size={15} aria-hidden />
               Call Now
             </a>
           </div>
@@ -113,380 +92,285 @@ export default async function HomePage() {
       </nav>
 
       <main className="flex-grow">
-        {/* Hero Section */}
-        <section className="relative pt-16 pb-20 overflow-hidden">
-          <div className="hero-glow" aria-hidden="true" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[var(--barber-surface)]/40 to-[var(--barber-bg)]"></div>
-          
-          {/* Barber poles */}
-          <div className="absolute left-4 top-20 bottom-20 w-4 hidden lg:block barber-stripe rounded-full opacity-60"></div>
-          <div className="absolute right-4 top-20 bottom-20 w-4 hidden lg:block barber-stripe rounded-full opacity-60"></div>
-          
-          <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
-            <div className="max-w-4xl mx-auto text-center">
-              {/* Established Badge */}
-              <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-[var(--barber-surface)]/60 backdrop-blur-sm mb-8">
-                <span className="text-[var(--text-muted)] text-sm font-sans">Est. 2008</span>
-                <span className="text-[var(--barber-border)]">|</span>
-                <a href="https://www.google.com/maps/place/Sampson's+Barber+Shop/@38.73,-82.84,15z" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sm text-[var(--text-secondary)] hover:text-[var(--accent-red)] transition-colors font-sans">
-                  <div className="flex">
-                    {[1,2,3,4,5].map(i => (
-                      <Star key={i} size={14} className={i <= 4 ? 'fill-yellow-400 text-yellow-400' : 'fill-yellow-400/50 text-yellow-400/50'} />
+        {/* Hero — logo + copy on cream; photo below */}
+        <section className="border-b border-[var(--barber-border)] bg-[var(--barber-surface)]">
+          <div className="max-w-6xl mx-auto px-6 lg:px-8 py-12 md:py-16 text-center">
+            <Image
+              src="/logo.png"
+              alt="Sampson's Barbershop"
+              width={200}
+              height={200}
+              className="mx-auto h-28 md:h-36 w-auto object-contain mb-8"
+              priority
+            />
+            <p className="section-kicker mb-2">Est. 2008 · Wheelersburg, Ohio</p>
+            <span className="section-rule" aria-hidden="true" />
+            <h1 className="font-serif text-4xl md:text-6xl text-[var(--text-primary)] mt-5 mb-3 tracking-tight">
+              Sampson&apos;s Barbershop
+            </h1>
+            <p className="pull-quote text-xl md:text-2xl text-[var(--text-secondary)] mb-2">
+              Traditional Cuts. Modern Style.
+            </p>
+            <p className="text-[var(--accent-red)] font-medium text-sm tracking-wide mb-4">Brian Sampson, Barber</p>
+            <p className="text-[var(--text-muted)] max-w-xl mx-auto mb-8 leading-relaxed">
+              Quality haircuts and grooming services in Wheelersburg, Ohio. Family-friendly barbershop.{' '}
+              <span className="text-[var(--accent-blue)] font-medium">Walk-ins only!</span>
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8">
+              <a href="#services" className="btn btn-primary">
+                View Services
+              </a>
+              <a href="tel:740-357-8269" className="btn btn-secondary">
+                <Phone size={15} aria-hidden />
+                (740) 357-8269
+              </a>
+            </div>
+
+            <p className="text-sm text-[var(--text-muted)] inline-flex items-center justify-center gap-1.5">
+              <MapPin size={15} className="text-[var(--accent-red)] shrink-0" aria-hidden />
+              8520 Ohio River Road, Wheelersburg, OH 45694
+            </p>
+          </div>
+
+          <div className="relative w-full h-[280px] md:h-[400px] border-t border-[var(--barber-border)]">
+            <Image
+              src="/exterior-color.jpg"
+              alt="Sampson's Barber Shop exterior"
+              fill
+              className="object-cover object-top"
+              sizes="100vw"
+            />
+          </div>
+
+          <div className="border-t border-[var(--barber-border)] bg-[var(--barber-bg)]">
+            <div className="max-w-6xl mx-auto px-6 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm text-[var(--text-secondary)] text-center md:text-left">
+                <p>
+                  <span className={`inline-block w-1.5 h-1.5 rounded-full mr-2 align-middle ${isOpen ? 'bg-[var(--accent-blue)]' : 'bg-[var(--accent-red)]'}`} />
+                  {isOpen ? 'Open now' : 'Closed'}
+                </p>
+                <p className="md:text-center">Mon–Fri 9–5 · Sat 7–12 · Sun closed</p>
+                <a
+                  href="https://www.google.com/maps/place/Sampson's+Barber+Shop/@38.73,-82.84,15z"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="md:text-right hover:text-[var(--accent-red)] transition-colors inline-flex items-center justify-center md:justify-end gap-1"
+                >
+                  <span className="flex" aria-hidden>
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <Star key={i} size={13} className={i <= 4 ? 'fill-[#b8956a] text-[#b8956a]' : 'fill-[#e0d6c8] text-[#e0d6c8]'} />
                     ))}
-                  </div>
-                  <span>4.5</span>
-                  <span className="text-[var(--text-muted)]">| 95 Reviews</span>
+                  </span>
+                  4.5 · 95 reviews
                 </a>
-              </div>
-
-              <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 font-sans">
-                <span className="text-[var(--text-primary)]">SAMPSON&apos;S</span>
-                <br />
-                <span className="text-gradient-red">BARBERSHOP</span>
-              </h1>
-              
-              <p className="text-xl text-[var(--text-secondary)] mb-2 italic">
-                Traditional Cuts. Modern Style.
-              </p>
-              <p className="text-[var(--accent-red)] font-semibold mb-4 font-sans">Brian Sampson, Barber</p>
-              <p className="text-[var(--text-muted)] max-w-xl mx-auto mb-8">
-                Quality haircuts and grooming services in Wheelersburg, Ohio. Family-friendly barbershop. <span className="text-[var(--accent-blue)] font-semibold">Walk-ins only!</span>
-              </p>
-
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
-                <a href="#services" className="inline-flex items-center gap-3 px-8 py-4 bg-[var(--accent-red)] hover:bg-[var(--accent-red-light)] text-white font-semibold rounded-full text-lg transition-all shadow-glow-red font-sans">
-                  <Scissors size={22} />
-                  View Services
-                </a>
-                <a href="tel:740-357-8269" className="inline-flex items-center gap-3 px-8 py-4 bg-[var(--barber-surface)]/80 hover:bg-[var(--barber-elevated)] text-[var(--text-primary)] font-medium rounded-full backdrop-blur-sm transition-all font-sans">
-                  <Phone size={20} />
-                  (740) 357-8269
-                </a>
-              </div>
-
-              <div className="inline-flex items-center gap-3 px-5 py-3 rounded-full bg-[var(--barber-surface)]/70 backdrop-blur-sm">
-                <MapPin size={18} className="text-[var(--accent-red)]" />
-                <div className="text-left">
-                  <p className="text-sm font-medium text-[var(--text-primary)] font-sans">8520 Ohio River Road</p>
-                  <p className="text-xs text-[var(--text-muted)] font-sans">Wheelersburg, OH 45694</p>
-                </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Exterior Photo Section */}
-        <section className="py-8 bg-[var(--barber-bg)]">
-          <div className="max-w-5xl mx-auto px-6 lg:px-8">
-            <div className="relative w-full h-[280px] md:h-[380px] rounded-3xl overflow-hidden vintage-frame">
-              <Image 
-                src="/exterior-color.jpg" 
-                alt="Sampson's Barber Shop exterior"
-                fill
-                className="object-cover object-top"
-                priority
-              />
-            </div>
-          </div>
-        </section>
+        <section id="services" className="py-16 md:py-20 border-b border-[var(--barber-border)]">
+          <div className="max-w-6xl mx-auto px-6 lg:px-8">
+            <SectionIntro
+              kicker="Our Services"
+              title="Quality Cuts at Honest Prices"
+              description="Professional barbering services for the whole family. No hidden fees."
+            />
 
-        {/* Services Section */}
-        <section id="services" className="py-20 bg-gradient-to-b from-[var(--barber-bg)] to-[var(--barber-surface)]/30">
-          <div className="max-w-7xl mx-auto px-6 lg:px-8">
-            <div className="max-w-2xl mb-12 text-center mx-auto">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--barber-bg)]/60 text-[var(--text-secondary)] text-xs font-medium tracking-wide mb-4 font-sans">
-                <Scissors size={14} className="text-[var(--accent-red)]" />
-                Our Services
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] tracking-tight mb-4 font-sans">
-                Quality Cuts at <span className="text-gradient-red">Honest Prices</span>
-              </h2>
-              <p className="text-[var(--text-secondary)]">
-                Professional barbering services for the whole family. No hidden fees.
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-0 max-w-4xl mx-auto divide-y md:divide-y-0 md:divide-x divide-[var(--barber-border)] border border-[var(--barber-border)] bg-[var(--barber-surface)] rounded-[4px]">
               {services.map((service) => (
-                <div key={service.id} className="soft-card group relative p-8 text-center">
-                  <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-6 mx-auto ${service.accent_color === 'red' ? 'bg-[var(--accent-red)]/15 text-[var(--accent-red)]' : 'bg-[var(--accent-blue)]/15 text-[var(--accent-blue)]'}`}>
-                    <ServiceIcon icon={service.icon} />
-                  </div>
-                  
-                  <h3 className="text-xl font-semibold text-[var(--text-primary)] mb-2 font-sans">{service.name}</h3>
-                  <p className="text-[var(--text-muted)] text-sm leading-relaxed mb-6">{service.description}</p>
-                  
-                  <div className="flex items-baseline justify-center gap-1">
-                    <span className={`text-4xl font-bold font-sans ${service.accent_color === 'red' ? 'text-[var(--accent-red)]' : 'text-[var(--accent-blue)]'}`}>
-                      ${service.price}
-                    </span>
-                  </div>
+                <div key={service.id} className="px-8 py-10 text-center">
+                  <h3 className="font-serif text-xl text-[var(--text-primary)] mb-2">{service.name}</h3>
+                  <p className="text-[var(--text-muted)] text-sm leading-relaxed mb-6 min-h-[3.5rem]">{service.description}</p>
+                  <p className="font-serif text-4xl text-[var(--accent-red)]">${service.price}</p>
                 </div>
               ))}
             </div>
-            
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--barber-bg)]/50 text-[var(--text-secondary)] text-sm font-sans">
-                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                Good for Kids
-              </div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--barber-bg)]/50 text-[var(--text-secondary)] text-sm font-sans">
-                <span className="w-2 h-2 bg-[var(--accent-blue)] rounded-full"></span>
-                Walk-ins Only
-              </div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--barber-bg)]/50 text-[var(--text-secondary)] text-sm font-sans">
-                <span className="w-2 h-2 bg-[var(--accent-red)] rounded-full"></span>
-                Cash &amp; Cards Accepted
-              </div>
-            </div>
+
+            <p className="text-center text-[var(--text-muted)] text-sm mt-8">
+              Walk-ins only · Good for kids · Cash &amp; cards accepted
+            </p>
           </div>
         </section>
 
-        {/* Hairstyle Gallery Section */}
-        <section id="gallery" className="py-20 bg-[var(--barber-bg)]">
-          <div className="max-w-7xl mx-auto px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--barber-surface)]/60 text-[var(--text-secondary)] text-xs font-medium tracking-wide mb-4 font-sans">
-                <Scissors size={14} className="text-[var(--accent-blue)]" />
-                Style Guide
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] tracking-tight mb-4 font-sans">
-                Classic <span className="text-[var(--accent-blue)]">Barbershop</span> Styles
-              </h2>
-              <p className="text-[var(--text-secondary)] max-w-xl mx-auto">
-                Browse our style guides for inspiration. Just point to what you like and we&apos;ll make it happen.
-              </p>
-            </div>
-            
+        <section id="gallery" className="py-16 md:py-20 border-b border-[var(--barber-border)] bg-[var(--barber-elevated)]">
+          <div className="max-w-6xl mx-auto px-6 lg:px-8">
+            <SectionIntro
+              kicker="Style Guide"
+              title="Classic Barbershop Styles"
+              description="Browse our style guides for inspiration. Just point to what you like and we'll make it happen."
+            />
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="vintage-frame overflow-hidden bg-white">
-                <Image 
-                  src="/hairstyles-1.png" 
-                  alt="Men's Clipper Cuts Guide"
-                  width={400}
-                  height={600}
-                  className="w-full h-auto"
-                />
+              <div className="vintage-frame">
+                <Image src="/hairstyles-1.png" alt="Men's Clipper Cuts Guide" width={400} height={600} className="w-full h-auto" />
               </div>
-              <div className="vintage-frame overflow-hidden bg-white">
-                <Image 
-                  src="/hairstyles-2.png" 
-                  alt="The Barber Hairstyle Guide"
-                  width={400}
-                  height={600}
-                  className="w-full h-auto"
-                />
+              <div className="vintage-frame">
+                <Image src="/hairstyles-2.png" alt="The Barber Hairstyle Guide" width={400} height={600} className="w-full h-auto" />
               </div>
-              <div className="vintage-frame overflow-hidden bg-white">
-                <Image 
-                  src="/hairstyles-3.png" 
-                  alt="The Barber Hairstyle Guide"
-                  width={400}
-                  height={600}
-                  className="w-full h-auto"
-                />
+              <div className="vintage-frame">
+                <Image src="/hairstyles-3.png" alt="The Barber Hairstyle Guide" width={400} height={600} className="w-full h-auto" />
               </div>
             </div>
           </div>
         </section>
 
-        {/* Reviews Section */}
-        <section id="reviews" className="py-20 bg-[var(--barber-surface)]/40">
-          <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
-            <div className="soft-panel rounded-2xl p-8 mb-8">
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <Image src="/google-logo.svg" alt="Google" width={24} height={24} className="opacity-80" />
-                <span className="text-[var(--text-muted)] text-sm font-sans">Google Reviews</span>
+        <section id="reviews" className="py-16 md:py-20 border-b border-[var(--barber-border)]">
+          <div className="max-w-3xl mx-auto px-6 lg:px-8">
+            <SectionIntro kicker="Google Reviews" title="What Folks Are Saying" />
+
+            <div className="surface p-8 md:p-10 text-center">
+              <div className="flex items-center justify-center gap-2 mb-4 text-sm text-[var(--text-muted)]">
+                <Image src="/google-logo.svg" alt="" width={20} height={20} aria-hidden />
+                Google Reviews
               </div>
-              <div className="text-5xl font-bold text-[var(--text-primary)] mb-2 font-sans">4.5</div>
-              <div className="flex justify-center mb-4">
-                {[1,2,3,4,5].map(i => (
-                  <Star key={i} size={24} className={i <= 4 ? 'fill-yellow-400 text-yellow-400' : 'fill-yellow-400/50 text-yellow-400/50'} />
+              <p className="font-serif text-5xl text-[var(--text-primary)] mb-2">4.5</p>
+              <div className="flex justify-center gap-0.5 mb-3" aria-label="4.5 out of 5 stars">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Star key={i} size={20} className={i <= 4 ? 'fill-[#b8956a] text-[#b8956a]' : 'fill-[#e0d6c8] text-[#e0d6c8]'} />
                 ))}
               </div>
-              <p className="text-[var(--text-muted)] mb-6 font-sans">Based on 95 reviews</p>
-              <a href="https://www.google.com/search?q=Sampson's+Barber+Shop+Wheelersburg+Ohio+reviews" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-[var(--barber-border)] hover:bg-[var(--barber-elevated)] transition-colors text-[var(--text-secondary)] font-sans">
+              <p className="text-[var(--text-muted)] text-sm mb-8">Based on 95 reviews</p>
+              <a
+                href="https://www.google.com/search?q=Sampson's+Barber+Shop+Wheelersburg+Ohio+reviews"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-secondary"
+              >
                 Read Reviews on Google
-                <Navigation size={16} />
+                <Navigation size={15} aria-hidden />
               </a>
             </div>
-            
-            <div className="soft-panel rounded-xl p-6">
-              <p className="text-[var(--text-secondary)] italic mb-4">
-                &quot;Great place for a haircut. Friendly staff and always does a great job. Been going here for years!&quot;
+
+            <blockquote className="mt-10 text-center">
+              <p className="pull-quote text-lg md:text-xl text-[var(--text-secondary)] leading-relaxed mb-4">
+                &ldquo;Great place for a haircut. Friendly staff and always does a great job. Been going here for years!&rdquo;
               </p>
-              <p className="text-[var(--text-muted)] text-sm font-sans">— Happy Customer</p>
-            </div>
+              <footer className="text-sm text-[var(--text-muted)]">— Happy Customer</footer>
+            </blockquote>
           </div>
         </section>
 
-        {/* Busyness Chart Section */}
-        <section id="busy-times" className="py-20 bg-[var(--barber-bg)]">
+        <section id="busy-times" className="py-16 md:py-20 border-b border-[var(--barber-border)]">
           <div className="max-w-4xl mx-auto px-6 lg:px-8">
-            <div className="text-center mb-10">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--barber-surface)]/60 text-[var(--text-secondary)] text-xs font-medium tracking-wide mb-4 font-sans">
-                <Users size={14} className="text-[var(--accent-blue)]" />
-                Best Times to Visit
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] tracking-tight mb-4 font-sans">
-                When It&apos;s <span className="text-[var(--accent-blue)]">Quiet</span>
-              </h2>
-              <p className="text-[var(--text-secondary)] max-w-xl mx-auto">
-                Plan your visit when it&apos;s less busy. Here&apos;s our typical weekly traffic pattern.
-              </p>
-            </div>
+            <SectionIntro
+              kicker="Best Times to Visit"
+              title="When It's Quiet"
+              description="Plan your visit when it's less busy. Here's our typical weekly traffic pattern."
+            />
 
-            {/* Busyness Chart */}
-            <div className="soft-panel rounded-2xl p-6 md:p-8">
-              {/* Legend */}
-              <div className="flex items-center justify-center gap-6 mb-6 text-sm font-sans">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-green-500/80"></div>
-                  <span className="text-[var(--text-muted)]">Quiet</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-yellow-500/80"></div>
-                  <span className="text-[var(--text-muted)]">Moderate</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-[var(--accent-red)]/80"></div>
-                  <span className="text-[var(--text-muted)]">Busy</span>
-                </div>
+            <div className="surface p-6 md:p-8">
+              <div className="flex flex-wrap items-center justify-center gap-6 mb-6 text-sm text-[var(--text-muted)]">
+                <span className="inline-flex items-center gap-2">
+                  <span className="w-3 h-3 border border-[var(--barber-border)] bg-[#e8f0e8]" aria-hidden />
+                  Quiet
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <span className="w-3 h-3 border border-[var(--barber-border)] bg-[#f5eed8]" aria-hidden />
+                  Moderate
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <span className="w-3 h-3 border border-[var(--barber-border)] bg-[#f0e4e4]" aria-hidden />
+                  Busy
+                </span>
               </div>
 
-              {/* Chart Grid */}
               <div className="overflow-x-auto">
-                <div className="min-w-[500px]">
-                  {/* Time Headers */}
-                  <div className="grid grid-cols-[80px_repeat(5,1fr)] gap-1 mb-1">
-                    <div></div>
-                    <div className="text-center text-xs text-[var(--text-muted)] font-sans py-2">9-10 AM</div>
-                    <div className="text-center text-xs text-[var(--text-muted)] font-sans py-2">10-12 PM</div>
-                    <div className="text-center text-xs text-[var(--text-muted)] font-sans py-2">12-2 PM</div>
-                    <div className="text-center text-xs text-[var(--text-muted)] font-sans py-2">2-4 PM</div>
-                    <div className="text-center text-xs text-[var(--text-muted)] font-sans py-2">4-5 PM</div>
+                <div className="min-w-[500px] text-sm">
+                  <div className="grid grid-cols-[90px_repeat(5,1fr)] gap-px mb-px bg-[var(--barber-border)]">
+                    <div className="bg-[var(--barber-surface)] p-2" />
+                    {['9–10 AM', '10–12 PM', '12–2 PM', '2–4 PM', '4–5 PM'].map((t) => (
+                      <div key={t} className="bg-[var(--barber-surface)] p-2 text-center text-xs text-[var(--text-muted)]">
+                        {t}
+                      </div>
+                    ))}
                   </div>
-                  
-                  {/* Days */}
+
                   {[
                     { day: 'Monday', levels: [1, 2, 2, 1, 2] },
                     { day: 'Tuesday', levels: [1, 1, 2, 1, 2] },
                     { day: 'Wednesday', levels: [1, 2, 2, 2, 2] },
                     { day: 'Thursday', levels: [1, 2, 2, 1, 2] },
                     { day: 'Friday', levels: [2, 2, 3, 2, 3] },
-                    { day: 'Saturday', levels: [3, 3, 0, 0, 0] }, // 7 AM - 12 PM only
+                    { day: 'Saturday', levels: [3, 3, 0, 0, 0] },
                   ].map((row, idx) => (
-                    <div key={idx} className="grid grid-cols-[80px_repeat(5,1fr)] gap-1 mb-1">
-                      <div className="flex items-center text-sm font-medium text-[var(--text-primary)] font-sans pr-2">
-                        {row.day}
-                      </div>
+                    <div key={idx} className="grid grid-cols-[90px_repeat(5,1fr)] gap-px mb-px bg-[var(--barber-border)]">
+                      <div className="bg-[var(--barber-surface)] p-2 font-medium text-[var(--text-primary)]">{row.day}</div>
                       {row.levels.map((level, i) => (
                         <div
                           key={i}
-                          className={`h-10 rounded-2xl flex items-center justify-center transition-all ${
-                            level === 0 
-                              ? 'bg-[var(--barber-surface)] border border-[var(--barber-border)]' 
-                              : level === 1 
-                                ? 'bg-green-500/20 border border-green-500/30' 
-                                : level === 2 
-                                  ? 'bg-yellow-500/20 border border-yellow-500/30' 
-                                  : 'bg-[var(--accent-red)]/20 border border-[var(--accent-red)]/30'
+                          className={`bg-[var(--barber-surface)] p-2 text-center text-xs ${
+                            level === 0
+                              ? 'text-[var(--text-muted)]'
+                              : level === 1
+                                ? 'bg-[#e8f0e8]'
+                                : level === 2
+                                  ? 'bg-[#f5eed8]'
+                                  : 'bg-[#f0e4e4]'
                           }`}
                         >
-                          {level === 0 && (
-                            <span className="text-xs text-[var(--text-muted)]">Closed</span>
-                          )}
+                          {level === 0 ? 'Closed' : ''}
                         </div>
                       ))}
                     </div>
                   ))}
-                  
-                  {/* Sunday */}
-                  <div className="grid grid-cols-[80px_repeat(5,1fr)] gap-1 mt-1">
-                    <div className="flex items-center text-sm font-medium text-[var(--text-muted)] font-sans pr-2">
-                      Sunday
-                    </div>
-                    <div className="col-span-5 h-10 rounded-md bg-[var(--barber-surface)] border border-[var(--barber-border)] flex items-center justify-center">
-                      <span className="text-xs text-[var(--text-muted)]">Closed</span>
-                    </div>
+
+                  <div className="grid grid-cols-[90px_repeat(5,1fr)] gap-px bg-[var(--barber-border)]">
+                    <div className="bg-[var(--barber-surface)] p-2 text-[var(--text-muted)]">Sunday</div>
+                    <div className="col-span-5 bg-[var(--barber-surface)] p-2 text-center text-xs text-[var(--text-muted)]">Closed</div>
                   </div>
                 </div>
               </div>
 
-              {/* Tips */}
-              <div className="mt-8 pt-6 border-t border-[var(--barber-border)]">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-start gap-3 p-4 rounded-xl bg-green-500/10 border border-green-500/20">
-                    <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                      <Clock size={16} className="text-green-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-[var(--text-primary)] font-sans">Best Time</p>
-                      <p className="text-xs text-[var(--text-muted)]">Weekday mornings (9-10 AM) are typically the quietest.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 p-4 rounded-xl bg-[var(--accent-red)]/10 border border-[var(--accent-red)]/20">
-                    <div className="w-8 h-8 rounded-full bg-[var(--accent-red)]/20 flex items-center justify-center flex-shrink-0">
-                      <Users size={16} className="text-[var(--accent-red)]" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-[var(--text-primary)] font-sans">Busiest Time</p>
-                      <p className="text-xs text-[var(--text-muted)]">Saturday mornings and Friday afternoons tend to be busiest.</p>
-                    </div>
-                  </div>
+              <div className="mt-8 pt-6 border-t border-[var(--barber-border)] grid md:grid-cols-2 gap-6 text-sm">
+                <div>
+                  <p className="font-medium text-[var(--text-primary)] mb-1">Best time</p>
+                  <p className="text-[var(--text-muted)]">Weekday mornings (9–10 AM) are typically the quietest.</p>
+                </div>
+                <div>
+                  <p className="font-medium text-[var(--text-primary)] mb-1">Busiest time</p>
+                  <p className="text-[var(--text-muted)]">Saturday mornings and Friday afternoons tend to be busiest.</p>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Hours & Location Section */}
-        <section id="hours" className="py-20 bg-gradient-to-b from-[var(--barber-surface)]/30 to-[var(--barber-bg)]">
-          <div className="max-w-7xl mx-auto px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-              {/* Hours */}
-              <div className="soft-panel rounded-2xl p-8">
-                <div className="flex items-center gap-2 text-[var(--accent-blue)] mb-4">
-                  <Clock size={20} />
-                  <span className="text-sm font-medium font-sans">Business Hours</span>
-                </div>
-                <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4 font-sans">When We&apos;re Open</h2>
-                
-                <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium mb-6 font-sans ${isOpen ? 'bg-green-500/20 text-green-400' : 'bg-[var(--accent-red)]/20 text-[var(--accent-red)]'}`}>
-                  <span className={`w-2 h-2 rounded-full ${isOpen ? 'bg-green-400' : 'bg-[var(--accent-red)]'}`}></span>
-                  {isOpen ? 'Open Now' : 'Closed'}
-                </div>
-                
-                <div className="space-y-3">
-                  {weeklyHours.map((hours) => (
-                    <div key={hours.day_of_week} className="flex justify-between items-center py-2 border-b border-[var(--barber-border)] last:border-0">
-                      <div className="flex items-center gap-3">
-                        <span className="text-[var(--text-primary)] font-medium font-sans">{DAY_NAMES[hours.day_of_week]}</span>
-                        {!hours.is_closed && (
-                          <span className="text-xs px-2 py-0.5 rounded bg-[var(--accent-blue)]/20 text-[var(--accent-blue)] font-sans">Walk-in</span>
-                        )}
-                      </div>
-                      <span className={`font-sans ${hours.is_closed ? 'text-[var(--text-muted)]' : 'text-[var(--text-secondary)]'}`}>
-                        {formatHoursForDay(hours)}
-                      </span>
-                    </div>
-                  ))}
+        <section id="hours" className="py-16 md:py-20 border-b border-[var(--barber-border)] bg-[var(--barber-elevated)]">
+          <div className="max-w-6xl mx-auto px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="surface p-8">
+                <p className="section-kicker">Business Hours</p>
+                <span className="section-rule section-rule-left" aria-hidden="true" />
+                <div className="flex items-baseline justify-between gap-4 mt-4 mb-6">
+                  <h2 className="font-serif text-3xl text-[var(--text-primary)]">When We&apos;re Open</h2>
+                  <span className="text-xs uppercase tracking-wider text-[var(--text-muted)]">
+                    {isOpen ? 'Open now' : 'Closed'}
+                  </span>
                 </div>
 
-                <p className="text-sm text-[var(--text-muted)] mt-6 pt-4 border-t border-[var(--barber-border)]">
-                  Walk-ins welcome - No appointment needed!
+                <ul className="divide-y divide-[var(--barber-border)]">
+                  {weeklyHours.map((hours) => (
+                    <li key={hours.day_of_week} className="flex justify-between py-3 text-sm">
+                      <span className="font-medium text-[var(--text-primary)]">{DAY_NAMES[hours.day_of_week]}</span>
+                      <span className={hours.is_closed ? 'text-[var(--text-muted)]' : 'text-[var(--text-secondary)]'}>
+                        {formatHoursForDay(hours)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+
+                <p className="pull-quote text-sm text-[var(--text-muted)] mt-6 pt-4 border-t border-[var(--barber-border)]">
+                  Walk-ins welcome — No appointment needed!
                 </p>
               </div>
 
-              {/* Location */}
-              <div id="location" className="soft-panel rounded-2xl p-8">
-                <div className="flex items-center gap-2 text-[var(--accent-red)] mb-4">
-                  <MapPin size={20} />
-                  <span className="text-sm font-medium font-sans">Location</span>
-                </div>
-                <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-6 font-sans">Find Us Here</h2>
-                
-                <div className="aspect-video rounded-3xl overflow-hidden mb-6 bg-[var(--barber-surface)]/50">
+              <div id="location" className="surface p-8">
+                <p className="section-kicker">Location</p>
+                <span className="section-rule section-rule-left" aria-hidden="true" />
+                <h2 className="font-serif text-3xl text-[var(--text-primary)] mt-4 mb-6">Find Us Here</h2>
+
+                <div className="aspect-video overflow-hidden mb-6 border border-[var(--barber-border)] rounded-[4px]">
                   <iframe
                     src="https://maps.google.com/maps?q=Sampson's+Barber+Shop+8520+Ohio+River+Rd+Wheelersburg+OH+45694&t=&z=15&ie=UTF8&iwloc=&output=embed"
                     width="100%"
@@ -496,61 +380,59 @@ export default async function HomePage() {
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
                     title="Sampson's Barbershop Location"
-                  ></iframe>
+                  />
                 </div>
-                
-                <div className="space-y-4">
-                  <div className="flex items-start gap-4 p-4 rounded-2xl bg-[var(--barber-bg)]/60">
-                    <MapPin size={20} className="text-[var(--accent-red)] flex-shrink-0 mt-1" />
-                    <div className="flex-grow">
-                      <p className="text-[var(--text-primary)] font-medium font-sans">8520 Ohio River Road</p>
-                      <p className="text-[var(--text-muted)] text-sm font-sans">Wheelersburg, OH 45694</p>
+
+                <div className="space-y-4 text-sm">
+                  <div className="flex items-start gap-2">
+                    <MapPin size={16} className="text-[var(--accent-red)] shrink-0 mt-0.5" aria-hidden />
+                    <div>
+                      <p className="font-medium text-[var(--text-primary)]">8520 Ohio River Road</p>
+                      <p className="text-[var(--text-muted)]">Wheelersburg, OH 45694</p>
                     </div>
-                    <a href="https://www.google.com/maps/dir/?api=1&destination=8520+Ohio+River+Road+Wheelersburg+OH+45694" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg hover:bg-[var(--barber-border)] transition-colors">
-                      <Navigation size={18} className="text-[var(--accent-blue)]" />
+                    <a
+                      href="https://www.google.com/maps/dir/?api=1&destination=8520+Ohio+River+Road+Wheelersburg+OH+45694"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-auto text-[var(--accent-blue)] hover:text-[var(--accent-red)]"
+                      aria-label="Get directions"
+                    >
+                      <Navigation size={16} />
                     </a>
                   </div>
-                  
-                  <a href="tel:740-357-8269" className="flex items-center gap-4 p-4 rounded-2xl bg-[var(--barber-bg)]/60 hover:bg-[var(--barber-elevated)]/80 transition-colors">
-                    <Phone size={20} className="text-[var(--accent-blue)]" />
-                    <div>
-                      <p className="text-[var(--text-primary)] font-medium font-sans">(740) 357-8269</p>
-                      <p className="text-[var(--text-muted)] text-sm font-sans">Tap to call</p>
-                    </div>
+                  <a href="tel:740-357-8269" className="flex items-center gap-2 pt-3 border-t border-[var(--barber-border)] hover:text-[var(--accent-red)] transition-colors">
+                    <Phone size={16} className="text-[var(--accent-blue)]" aria-hidden />
+                    <span className="font-medium">(740) 357-8269</span>
                   </a>
                 </div>
               </div>
             </div>
 
-            {/* Upcoming Exceptions */}
             {exceptions.length > 0 && (
-              <div className="mt-12 soft-panel rounded-2xl p-8">
-                <h3 className="text-xl font-bold text-[var(--text-primary)] mb-6 flex items-center gap-3 font-sans">
-                  <Clock size={24} className="text-[var(--accent-red)]" />
-                  Upcoming Holiday / Special Hours
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="surface p-8 mt-8">
+                <p className="section-kicker">Upcoming</p>
+                <span className="section-rule section-rule-left" aria-hidden="true" />
+                <h3 className="font-serif text-2xl text-[var(--text-primary)] mt-4 mb-6">Holiday / Special Hours</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {exceptions.map((exception) => (
-                    <div key={exception.id} className="p-4 rounded-2xl bg-[var(--barber-bg)]/60">
-                      <div className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium mb-2 font-sans ${exception.type === 'closed' ? 'bg-[var(--accent-red)]/20 text-[var(--accent-red)]' : 'bg-[var(--accent-blue)]/20 text-[var(--accent-blue)]'}`}>
-                        {exception.type === 'closed' ? 'CLOSED' : 'MODIFIED HOURS'}
-                      </div>
-                      <p className="font-semibold text-[var(--text-primary)] font-sans">{exception.label}</p>
-                      <p className="text-sm text-[var(--text-muted)] font-sans">
+                    <div key={exception.id} className="border-l-2 border-[var(--accent-tan)] pl-4">
+                      <p className={`text-xs uppercase tracking-wider mb-1 ${exception.type === 'closed' ? 'text-[var(--accent-red)]' : 'text-[var(--accent-blue)]'}`}>
+                        {exception.type === 'closed' ? 'Closed' : 'Modified hours'}
+                      </p>
+                      <p className="font-medium text-[var(--text-primary)]">{exception.label}</p>
+                      <p className="text-sm text-[var(--text-muted)]">
                         {new Date(exception.date + 'T00:00:00').toLocaleDateString('en-US', {
                           weekday: 'long',
                           month: 'long',
-                          day: 'numeric'
+                          day: 'numeric',
                         })}
                       </p>
                       {exception.type === 'modified' && exception.open_time && exception.close_time && (
-                        <p className="text-sm text-[var(--accent-blue)] mt-1 font-sans">
-                          {formatTimeForDisplay(exception.open_time)} - {formatTimeForDisplay(exception.close_time)}
+                        <p className="text-sm text-[var(--accent-blue)] mt-1">
+                          {formatTimeForDisplay(exception.open_time)} – {formatTimeForDisplay(exception.close_time)}
                         </p>
                       )}
-                      {exception.notes && (
-                        <p className="text-xs text-[var(--text-muted)] mt-2">{exception.notes}</p>
-                      )}
+                      {exception.notes && <p className="pull-quote text-xs text-[var(--text-muted)] mt-2">{exception.notes}</p>}
                     </div>
                   ))}
                 </div>
@@ -559,119 +441,75 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* Walk-ins Section */}
-        <section className="py-20 bg-[var(--barber-surface)]/30">
-          <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded bg-[var(--barber-bg)] border border-[var(--barber-border)] text-[var(--text-secondary)] text-xs font-medium tracking-wide mb-4 font-sans">
-              <Scissors size={14} className="text-[var(--accent-red)]" />
-              Walk-Ins Only
-            </div>
-            
-            <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] tracking-tight mb-4 font-sans">
-              How to Get a Cut
-            </h2>
-            
-            <p className="text-[var(--text-secondary)] text-lg max-w-xl mx-auto mb-8">
-              No appointment needed! Just <span className="text-[var(--accent-blue)] font-semibold">walk in</span> during business hours and we&apos;ll take care of you.
-            </p>
-            
-            <div className="soft-panel rounded-xl p-8 max-w-2xl mx-auto mb-10">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-full bg-[var(--accent-blue)]/10 flex items-center justify-center">
-                  <Clock size={32} className="text-[var(--accent-blue)]" />
-                </div>
-                <div className="text-left">
-                  <h3 className="text-2xl font-semibold text-[var(--text-primary)] font-sans">Walk-Ins Welcome</h3>
-                  <p className="text-[var(--accent-blue)] font-medium font-sans">Monday - Saturday</p>
-                </div>
-              </div>
-              <p className="text-[var(--text-muted)] mb-6 text-left">
-                At Sampson&apos;s Barbershop, we keep it simple. No apps, no booking systems - just stop by during our business hours and we&apos;ll get you taken care of. First come, first served.
+        <section className="py-16 md:py-20 border-b border-[var(--barber-border)]">
+          <div className="max-w-2xl mx-auto px-6 lg:px-8 text-center">
+            <SectionIntro
+              kicker="Walk-Ins Only"
+              title="How to Get a Cut"
+              description="No appointment needed! Just walk in during business hours and we'll take care of you."
+            />
+
+            <div className="surface p-8 text-left max-w-xl mx-auto mb-8">
+              <h3 className="font-serif text-xl text-[var(--text-primary)] mb-1">Walk-Ins Welcome</h3>
+              <p className="text-sm text-[var(--accent-blue)] mb-4">Monday – Saturday</p>
+              <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-4">
+                At Sampson&apos;s Barbershop, we keep it simple. No apps, no booking systems — just stop by during our business hours and we&apos;ll get you taken care of. First come, first served.
               </p>
-              <div className="flex flex-wrap gap-3 justify-center">
-                <div className="px-4 py-2 rounded-full bg-[var(--accent-blue)]/10 text-[var(--accent-blue)] text-sm font-medium font-sans">
-                  No appointments
-                </div>
-                <div className="px-4 py-2 rounded-full bg-green-500/10 text-green-400 text-sm font-medium font-sans">
-                  First come, first served
-                </div>
-                <div className="px-4 py-2 rounded-full bg-[var(--accent-red)]/10 text-[var(--accent-red)] text-sm font-medium font-sans">
-                  Family friendly
-                </div>
+              <p className="text-sm text-[var(--text-muted)]">No appointments · First come, first served · Family friendly</p>
+            </div>
+
+            <div className="surface p-8 max-w-md mx-auto">
+              <h3 className="font-serif text-xl text-[var(--text-primary)] mb-2">Ready for a Fresh Cut?</h3>
+              <p className="text-sm text-[var(--text-muted)] mb-6">
+                Stop by during business hours. Brian Sampson is ready to give you a great haircut!
+              </p>
+              <a href="#hours" className="btn btn-primary w-full sm:w-auto">
+                <Clock size={16} aria-hidden />
+                View Hours
+              </a>
+              <div className="mt-8 pt-6 border-t border-[var(--barber-border)] grid grid-cols-3 gap-4 text-center">
+                {services.slice(0, 3).map((service) => (
+                  <div key={service.id}>
+                    <p className="font-serif text-2xl text-[var(--accent-red)]">${service.price}</p>
+                    <p className="text-xs text-[var(--text-muted)] mt-1">{service.name}</p>
+                  </div>
+                ))}
               </div>
             </div>
 
-            <div className="soft-panel rounded-2xl p-8 max-w-xl mx-auto">
-              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2 font-sans">
-                Ready for a Fresh Cut?
-              </h3>
-              <p className="text-[var(--text-muted)] text-sm mb-6">
-                Stop by during business hours. Brian Sampson is ready to give you a great haircut!
-              </p>
-              
-              <a
-                href="#hours"
-                className="inline-flex items-center justify-center gap-3 w-full sm:w-auto px-10 py-4 bg-[var(--accent-red)] hover:bg-[var(--accent-red-light)] text-white font-semibold rounded-full text-lg transition-all shadow-glow-red font-sans"
-              >
-                <Clock size={22} />
-                View Hours
-              </a>
-              
-              <div className="mt-10 pt-8 border-t border-[var(--barber-border)]">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
-                  {services.slice(0, 3).map((service) => (
-                    <div key={service.id}>
-                      <p className={`text-2xl font-bold font-sans ${service.accent_color === 'red' ? 'text-[var(--accent-red)]' : 'text-[var(--accent-blue)]'}`}>${service.price}</p>
-                      <p className="text-[var(--text-muted)] text-sm font-sans">{service.name}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            
-            <p className="mt-8 text-[var(--text-muted)] text-sm">
-              Serving Wheelersburg since 2008 | Brian Sampson, Barber
-            </p>
+            <p className="mt-8 text-sm text-[var(--text-muted)]">Serving Wheelersburg since 2008 · Brian Sampson, Barber</p>
           </div>
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-[var(--barber-bg)] border-t border-[var(--barber-border)]">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
+      <footer className="bg-[var(--barber-surface)] border-t border-[var(--barber-border)]">
+        <div className="max-w-6xl mx-auto px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="md:col-span-2">
               <div className="flex items-center gap-3 mb-4">
-                <Image 
-                  src="/logo.png" 
-                  alt="Sampson's Barbershop Logo" 
-                  width={40} 
-                  height={40} 
-                  className="rounded-lg"
-                />
-                <div>
-                  <span className="text-lg font-bold text-[var(--text-primary)] tracking-tight block font-sans">Sampson&apos;s Barbershop</span>
-                </div>
+                <Image src="/logo.png" alt="" width={48} height={48} className="h-11 w-auto object-contain" />
+                <span className="font-serif text-lg text-[var(--text-primary)]">Sampson&apos;s Barbershop</span>
               </div>
-              <p className="text-sm text-[var(--accent-red)] font-semibold mb-2 font-sans">Brian Sampson, Barber</p>
+              <p className="text-sm text-[var(--accent-red)] font-medium mb-2">Brian Sampson, Barber</p>
               <p className="text-sm text-[var(--text-muted)] leading-relaxed max-w-sm">
                 Traditional cuts with modern style. Serving the Wheelersburg community with quality haircuts and grooming services. Walk-ins only!
               </p>
             </div>
 
             <div>
-              <h4 className="text-xs font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4 font-sans">Contact</h4>
-              <ul className="space-y-3 text-sm text-[var(--text-muted)]">
+              <h4 className="section-kicker mb-3">Contact</h4>
+              <ul className="space-y-2 text-sm text-[var(--text-muted)]">
                 <li>
-                  <a href="tel:740-357-8269" className="flex items-center gap-2 hover:text-[var(--text-secondary)] transition-colors font-sans">
-                    <Phone size={14} className="text-[var(--accent-blue)]" />
+                  <a href="tel:740-357-8269" className="inline-flex items-center gap-2 hover:text-[var(--accent-red)]">
+                    <Phone size={14} aria-hidden />
                     (740) 357-8269
                   </a>
                 </li>
                 <li className="flex items-start gap-2">
-                  <MapPin size={14} className="text-[var(--accent-red)] mt-0.5" />
-                  <span className="font-sans">
-                    8520 Ohio River Road<br />
+                  <MapPin size={14} className="shrink-0 mt-0.5" aria-hidden />
+                  <span>
+                    8520 Ohio River Road
+                    <br />
                     Wheelersburg, OH 45694
                   </span>
                 </li>
@@ -679,32 +517,22 @@ export default async function HomePage() {
             </div>
 
             <div>
-              <h4 className="text-xs font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4 font-sans">Hours</h4>
-              <ul className="space-y-2 text-sm text-[var(--text-muted)] font-sans">
-                <li className="flex items-center gap-2">
-                  <Clock size={14} className="text-[var(--accent-blue)]" />
-                  <span>Mon-Fri: 9 AM - 5 PM</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Clock size={14} className="text-[var(--accent-blue)]" />
-                  <span>Saturday: 7 AM - 12 PM</span>
-                </li>
-                <li className="flex items-center gap-2 opacity-50">
-                  <Clock size={14} />
-                  <span>Sunday: Closed</span>
-                </li>
+              <h4 className="section-kicker mb-3">Hours</h4>
+              <ul className="space-y-1 text-sm text-[var(--text-muted)]">
+                <li>Mon–Fri: 9 AM – 5 PM</li>
+                <li>Saturday: 7 AM – 12 PM</li>
+                <li>Sunday: Closed</li>
               </ul>
             </div>
           </div>
 
-          <div className="mt-12 pt-6 border-t border-[var(--barber-border)] flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-xs text-[var(--text-muted)] font-sans">
-              &copy; {new Date().getFullYear()} Sampson&apos;s Barbershop. All rights reserved.
-            </p>
-            <div className="flex items-center gap-4 text-xs text-[var(--text-muted)] font-sans">
-              <span className="w-1.5 h-1.5 bg-[var(--accent-red)] rounded-full"></span>
+          <div className="mt-10 pt-6 border-t border-[var(--barber-border)] flex flex-col sm:flex-row justify-between gap-3 text-xs text-[var(--text-muted)]">
+            <p>&copy; {new Date().getFullYear()} Sampson&apos;s Barbershop. All rights reserved.</p>
+            <div className="flex gap-4">
               <span>Wheelersburg, Ohio</span>
-              <a href="/admin/login" className="hover:text-[var(--text-secondary)] transition-colors">Admin</a>
+              <a href="/admin/login" className="hover:text-[var(--text-secondary)]">
+                Admin
+              </a>
             </div>
           </div>
         </div>
