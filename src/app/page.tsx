@@ -133,13 +133,15 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="relative w-full h-[280px] md:h-[400px] border-t border-[var(--barber-border)]">
+          <div className="border-t border-[var(--barber-border)]">
             <Image
               src="/exterior-color.jpg"
-              alt="Sampson's Barber Shop exterior"
-              fill
-              className="object-cover object-top"
+              alt="Sampson's Barber Shop exterior — brick building with blue roof, 8520 Ohio River Road, Wheelersburg"
+              width={1536}
+              height={1024}
+              className="w-full h-auto block"
               sizes="100vw"
+              priority
             />
           </div>
 
