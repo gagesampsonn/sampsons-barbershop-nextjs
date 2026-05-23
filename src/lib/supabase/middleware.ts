@@ -1,6 +1,12 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+const PROTECTED_ADMIN_PREFIXES = ['/admin/dashboard', '/admin/analytics']
+
+function isProtectedAdminRoute(pathname: string) {
+  return PROTECTED_ADMIN_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -8,12 +14,20 @@ export async function updateSession(request: NextRequest) {
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const pathname = request.nextUrl.pathname
 
-  // If no Supabase credentials, allow public site; admin login shows setup error
+  // Legacy login URL → /admin
+  if (pathname === '/admin/login' || pathname.startsWith('/admin/login/')) {
+    const adminUrl = request.nextUrl.clone()
+    adminUrl.pathname = '/admin'
+    adminUrl.search = request.nextUrl.search
+    return NextResponse.redirect(adminUrl)
+  }
+
   if (!url || !key) {
-    if (request.nextUrl.pathname.startsWith('/admin') && request.nextUrl.pathname !== '/admin/login') {
+    if (isProtectedAdminRoute(pathname)) {
       const loginUrl = request.nextUrl.clone()
-      loginUrl.pathname = '/admin/login'
+      loginUrl.pathname = '/admin'
       loginUrl.searchParams.set('error', 'setup')
       return NextResponse.redirect(loginUrl)
     }
@@ -41,34 +55,35 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Check if accessing admin routes
-  if (request.nextUrl.pathname.startsWith('/admin')) {
-    // Allow access to login page
-    if (request.nextUrl.pathname === '/admin/login') {
-      // If already logged in, redirect to admin
-      if (user) {
-        const allowedEmails = (process.env.ADMIN_EMAIL_ALLOWLIST || '').split(',').map(e => e.trim().toLowerCase())
-        if (allowedEmails.includes(user.email?.toLowerCase() || '')) {
-          const adminUrl = request.nextUrl.clone()
-          adminUrl.pathname = '/admin'
-          return NextResponse.redirect(adminUrl)
-        }
-      }
-      return supabaseResponse
-    }
+  const allowedEmails = (process.env.ADMIN_EMAIL_ALLOWLIST || '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean)
 
-    // Protect other admin routes
+  const isAllowedUser =
+    user?.email && allowedEmails.includes(user.email.toLowerCase())
+
+  // /admin = login; signed-in users go to dashboard
+  if (pathname === '/admin') {
+    if (isAllowedUser) {
+      const dashboardUrl = request.nextUrl.clone()
+      dashboardUrl.pathname = '/admin/dashboard'
+      dashboardUrl.search = ''
+      return NextResponse.redirect(dashboardUrl)
+    }
+    return supabaseResponse
+  }
+
+  if (isProtectedAdminRoute(pathname)) {
     if (!user) {
       const loginUrl = request.nextUrl.clone()
-      loginUrl.pathname = '/admin/login'
+      loginUrl.pathname = '/admin'
       return NextResponse.redirect(loginUrl)
     }
 
-    // Check if user email is in allowlist
-    const allowedEmails = (process.env.ADMIN_EMAIL_ALLOWLIST || '').split(',').map(e => e.trim().toLowerCase())
-    if (!allowedEmails.includes(user.email?.toLowerCase() || '')) {
+    if (!isAllowedUser) {
       const loginUrl = request.nextUrl.clone()
-      loginUrl.pathname = '/admin/login'
+      loginUrl.pathname = '/admin'
       loginUrl.searchParams.set('error', 'unauthorized')
       return NextResponse.redirect(loginUrl)
     }

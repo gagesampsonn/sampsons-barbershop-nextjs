@@ -431,7 +431,7 @@ export default async function HomePage() {
             <p>&copy; {new Date().getFullYear()} Sampson&apos;s Barbershop. All rights reserved.</p>
             <div className="flex gap-4">
               <span>Wheelersburg, Ohio</span>
-              <a href="/admin/login" className="hover:text-[var(--text-secondary)]">
+              <a href="/admin" className="hover:text-[var(--text-secondary)]">
                 Admin
               </a>
             </div>

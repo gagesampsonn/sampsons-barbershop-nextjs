@@ -1,7 +1,7 @@
 # Sampson's Barbershop
 
 Public site: **https://sampsonsbarbershop.com**  
-Admin panel: **https://sampsonsbarbershop.com/admin/login**
+Admin panel: **https://sampsonsbarbershop.com/admin**
 
 Next.js site with Supabase for editable hours, holiday closures, and service pricing.
 
@@ -15,7 +15,7 @@ Next.js site with Supabase for editable hours, holiday closures, and service pri
    - `ADMIN_EMAIL_ALLOWLIST` (comma-separated admin emails, e.g. `brian@example.com`)
 4. Redeploy.
 
-After login at `/admin/login`, you can update prices, weekly hours, and holiday exceptions. Changes appear on the site within about 60 seconds.
+After signing in at `/admin`, you can update prices, weekly hours, and holiday exceptions. Square sales data is under **Square Data** in the dashboard (`/admin/analytics`). Changes appear on the site within about 60 seconds.
 
 ## Local development
 

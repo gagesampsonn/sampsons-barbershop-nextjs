@@ -81,12 +81,12 @@ export default function AnalyticsPage() {
   useEffect(() => {
     const checkAuth = async () => {
       if (!supabase) {
-        router.push('/admin/login?error=setup')
+        router.push('/admin?error=setup')
         return
       }
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        router.push('/admin/login')
+        router.push('/admin')
         return
       }
       fetchAnalytics()
@@ -149,7 +149,7 @@ export default function AnalyticsPage() {
           <h2 className="text-[#e8e8e8] font-medium text-lg mb-2">Unable to Load</h2>
           <p className="text-[#6a6a6a] text-sm mb-8 max-w-xs">{error}</p>
           <button 
-            onClick={() => router.push('/admin')}
+            onClick={() => router.push('/admin/dashboard')}
             className="text-sm text-[#c9a227] hover:text-[#d4af37] transition-colors py-2 px-4"
           >
             ← Return to Dashboard
@@ -222,7 +222,7 @@ export default function AnalyticsPage() {
       <header className="sticky top-0 z-10 backdrop-blur-xl bg-[#1a1a1a]/80 border-b border-[#2a2a2a]">
         <div className="flex items-center justify-between px-5 h-16">
           <button 
-            onClick={() => router.push('/admin')}
+            onClick={() => router.push('/admin/dashboard')}
             className="flex items-center gap-2 text-[#8a8a8a] hover:text-[#c9a227] active:text-[#c9a227] transition-colors p-2 -ml-2"
           >
             <ArrowLeft size={18} strokeWidth={1.5} />
